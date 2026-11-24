@@ -50,22 +50,22 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle={`${data.org.name} · ${data.org.programme} ${data.programmeYears[0]}`} />
+      <PageHeader title="Supplier ESG Dashboard" subtitle={`${data.org.name} · Supplier ESG Programme ${data.programmeYears[0]} · Performance, risk and compliance overview`} />
 
       <div className="needs-row">
-        <NeedCard count={n.review} title="Responses to review" detail="Submitted, waiting for your team" to="/reviews/responses" />
-        <NeedCard count={n.overdue + n.notInvited} title="Overdue or not invited" detail={`${n.overdue} overdue · ${n.notInvited} never invited`} to="/assessments" />
-        <NeedCard count={n.flags} title="Open red flags" detail={`${n.flagsAll - n.flags} more already have an action`} to="/reviews/flags" />
+        <NeedCard count={n.review} title="Pending Reviews" detail="Submitted assessments awaiting verification" to="/reviews/responses" />
+        <NeedCard count={n.overdue + n.notInvited} title="Overdue & Uninvited" detail={`${n.overdue} past due · ${n.notInvited} pending invitation`} to="/assessments" />
+        <NeedCard count={n.flags} title="Open Critical Findings" detail={`${n.flagsAll - n.flags} further under corrective action`} to="/reviews/flags" />
         <NeedCard
           count={n.evidence + n.questions}
-          title="Evidence & questions"
-          detail={`${n.evidence} document${n.evidence === 1 ? '' : 's'} · ${n.questions} supplier question${n.questions === 1 ? '' : 's'}`}
+          title="Evidence & Clarifications"
+          detail={`${n.evidence} ${n.evidence === 1 ? 'document' : 'documents'} to verify · ${n.questions} supplier ${n.questions === 1 ? 'query' : 'queries'}`}
           to="/reviews/evidence"
         />
       </div>
 
       <FilterBar>
-        <span className="filter-bar__label">Show</span>
+        <span className="filter-bar__label">Supplier tier</span>
         <Segmented<TierFilter>
           value={tier}
           onChange={(v) => setFilter('tier', String(v))}
@@ -82,7 +82,7 @@ export default function DashboardPage() {
           aria-label="Facility"
           options={[{ value: 'all', label: 'All facilities' }, ...data.facilities.map((f) => ({ value: f.name, label: f.name }))]}
         />
-        <span className="filter-bar__hint">Hover any mark for detail · click a supplier to open it</span>
+        <span className="filter-bar__hint">Hover for detail · select a supplier to view its profile</span>
       </FilterBar>
 
       {/* Two independent columns, so cards of different heights don't leave gaps */}

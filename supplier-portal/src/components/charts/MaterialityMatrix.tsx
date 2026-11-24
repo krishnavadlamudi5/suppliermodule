@@ -49,13 +49,13 @@ export function MaterialityMatrix({ topics, threshold = 3.5, large }: Props) {
       <line x1={X(threshold)} y1={t} x2={X(threshold)} y2={t + ph} className="ref" />
       <line x1={l} y1={Y(threshold)} x2={l + pw} y2={Y(threshold)} className="ref" />
       <text x={l + pw - 8} y={t + 16} textAnchor="end" className="zone-title">
-        Double material
+        Double materiality
       </text>
       <text x={l + 8} y={t + 16} className="sub">
-        Impact material
+        Impact materiality
       </text>
       <text x={l + pw - 8} y={t + ph - 8} textAnchor="end" className="sub">
-        Financially material
+        Financial materiality
       </text>
       <text x={l + 8} y={t + ph - 8} className="sub">
         Monitor

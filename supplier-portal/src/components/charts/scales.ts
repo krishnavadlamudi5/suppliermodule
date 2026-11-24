@@ -9,7 +9,7 @@ export const heatColor = (v: number) => heatRamp.find((h) => v <= h.max) ?? heat
 
 export const heatLegend: LegendItem[] = [
   ...heatRamp.map((h) => ({ label: h.label, color: h.fill })),
-  { label: 'Not scored', color: palette['neutral-50'], style: { border: `1px dashed ${palette['neutral-300']}` } },
+  { label: 'Not applicable', color: palette['neutral-50'], style: { border: `1px dashed ${palette['neutral-300']}` } },
 ];
 
 export const isMaterial = (t: MaterialityTopic, th = 3.5) => t.impact >= th || t.financial >= th;

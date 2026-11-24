@@ -34,6 +34,15 @@ export const MATURITY = [
   { name: 'Transformative', min: 90, definition: 'ESG embedded in the core business' },
 ] as const;
 
+/** Formal names for red-flag findings, as used in compliance reporting. */
+export const FLAG_CAUSE_LABEL: Record<FlagCause, string> = {
+  'Permit missing (CTO)': 'Missing Consent to Operate (CTO)',
+  'Penalties, past 3 years': 'Regulatory penalties (past 3 years)',
+  'Wages or working hours': 'Wage & working-hour non-compliance',
+  'Child or forced labour': 'Child or forced labour',
+  Fatality: 'Workplace fatality',
+};
+
 export const FLAG_CAUSES: FlagCause[] = [
   'Permit missing (CTO)',
   'Penalties, past 3 years',

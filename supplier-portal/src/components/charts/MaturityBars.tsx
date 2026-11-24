@@ -57,7 +57,7 @@ export function MaturityBars({ rows }: { rows: MaturityRow[] }) {
             <text x={0} y={y + 17} className="lab">
               {r.label}
             </text>
-            {segments(r.current, y + 2, 22, r.label, 'Now', false)}
+            {segments(r.current, y + 2, 22, r.label, '2026', false)}
             {r.previous && (
               <>
                 <text x={0} y={y + 38} className="sub">

@@ -76,9 +76,9 @@ describe('programme status', () => {
   it('builds the assessment funnel split by tier', () => {
     const stages = funnelStages(d, activeAssignments(d));
     expect(stages.map((s) => [s.name, s.tier1, s.tier2])).toEqual([
-      ['Added', 11, 10],
+      ['Assigned', 11, 10],
       ['Invited', 10, 8],
-      ['Started', 10, 7],
+      ['In progress', 10, 7],
       ['Submitted', 10, 7],
       ['Reviewed', 8, 5],
     ]);

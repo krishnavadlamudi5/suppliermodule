@@ -18,7 +18,7 @@ import { useToast } from '../../components/useToast';
 import { useDrawers } from '../../features/drawers/DrawerContext';
 import { EditSupplierModal } from '../../features/suppliers/EditSupplierModal';
 import { usePortal, usePortalActions } from '../../state/hooks';
-import { AREAS, ASSIGNMENT_LABEL, RISK_RULES } from '../../domain/constants';
+import { AREAS, ASSIGNMENT_LABEL, RISK_RULES, FLAG_CAUSE_LABEL } from '../../domain/constants';
 import {
   areaAverages,
   assessmentById,
@@ -208,7 +208,7 @@ function Overview({ data, s }: { data: PortalData; s: Supplier }) {
                 key={f.id}
                 icon={<RiskBadge level="High" />}
                 title={f.text}
-                meta={`${f.cause} · ${assessmentById(data, f.assessmentId)?.title ?? ''} · ${f.status}`}
+                meta={`${FLAG_CAUSE_LABEL[f.cause]} · ${assessmentById(data, f.assessmentId)?.title ?? ''} · ${f.status}`}
               />
             ))
           ) : (
@@ -348,7 +348,7 @@ function FlagsTab({ data, s }: { data: PortalData; s: Supplier }) {
               key={f.id}
               icon={<RiskBadge level="High" />}
               title={f.text}
-              meta={`${f.cause} · ${f.status}`}
+              meta={`${FLAG_CAUSE_LABEL[f.cause]} · ${f.status}`}
               action={
                 f.status === 'Open' && (
                   <Button

@@ -8,6 +8,7 @@ import { Pill } from '../../components/Pill/Pill';
 import { FormField } from '../../components/blocks/Blocks';
 import { EmptyState } from '../../components/EmptyState/EmptyState';
 import { useToast } from '../../components/useToast';
+import { FLAG_CAUSE_LABEL } from '../../domain/constants';
 import { usePortal, usePortalActions } from '../../state/hooks';
 import { addDays, isOverdue, supplierById } from '../../domain/selectors';
 import type { ActionStatus, ImprovementAction, PortalData } from '../../domain/types';
@@ -81,7 +82,7 @@ function ActionCard({ data, a }: { data: PortalData; a: ImprovementAction }) {
       <div className="action-card__meta" style={{ marginTop: 6 }}>
         {late && <Pill tone="error">Overdue</Pill>}
         <span>Due {formatDateShort(a.dueDate)}</span>
-        {flag && <Pill tone="neutral">⚑ {flag.cause}</Pill>}
+        {flag && <Pill tone="neutral">⚑ {FLAG_CAUSE_LABEL[flag.cause]}</Pill>}
       </div>
       {a.status === 'Awaiting approval' && (
         <div className="action-card__buttons">

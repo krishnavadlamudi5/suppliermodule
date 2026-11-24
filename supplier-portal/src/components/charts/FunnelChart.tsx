@@ -64,7 +64,7 @@ export function FunnelChart({ stages, single, alertBelow = 0.8 }: Props) {
             {prev != null && (
               <text x={W} y={y + 15} textAnchor="end" className={alert ? 'alert' : 'sub'}>
                 {drop > 0 ? `−${drop} · ` : ''}
-                {pct}% carry on
+                {pct}% conversion
               </text>
             )}
           </g>

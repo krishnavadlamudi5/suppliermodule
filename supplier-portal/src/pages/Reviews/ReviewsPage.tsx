@@ -12,6 +12,7 @@ import { MessageList } from '../../components/domain/DomainBits';
 import { EmptyState } from '../../components/EmptyState/EmptyState';
 import { useToast } from '../../components/useToast';
 import { useConfirm } from '../../components/useConfirm';
+import { FLAG_CAUSE_LABEL } from '../../domain/constants';
 import { usePortal, usePortalActions } from '../../state/hooks';
 import { activeAssignments, assessmentById, needs, riskOf, supplierById } from '../../domain/selectors';
 import type { Assignment, Evidence, PortalData, RedFlag } from '../../domain/types';
@@ -212,7 +213,7 @@ function FlagsTab({ data }: { data: PortalData }) {
       ),
     },
     { title: 'Supplier', key: 's', render: (_, f) => <CellTitle to={`/suppliers/${f.supplierId}`} title={supplierById(data, f.supplierId)?.name} /> },
-    { title: 'Cause', dataIndex: 'cause' },
+    { title: 'Finding type', key: 'cause', render: (_, f) => FLAG_CAUSE_LABEL[f.cause] },
     { title: 'Assessment', key: 'a', render: (_, f) => assessmentById(data, f.assessmentId)?.title },
     { title: 'Status', key: 'st', render: (_, f) => <Pill tone={f.status === 'Open' ? 'error' : 'neutral'}>{f.status}</Pill> },
     {

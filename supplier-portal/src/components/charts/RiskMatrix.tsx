@@ -59,19 +59,19 @@ export function RiskMatrix({ points, highSpend, scoreThreshold = 60, onSelect }:
       <line x1={l} y1={Y(highSpend)} x2={l + pw} y2={Y(highSpend)} className="ref" />
 
       <text x={l + 8} y={t + 18} className="zone-title">
-        Engage first
+        Priority engagement
       </text>
       <text x={l + 8} y={t + 33} className="sub">
-        high spend, score below {scoreThreshold}
+        high spend · score below {scoreThreshold}
       </text>
       <text x={l + pw - 8} y={t + 18} textAnchor="end" className="sub">
-        Strategic and strong
+        Strategic partners
       </text>
       <text x={l + 8} y={t + ph - 8} className="sub">
-        Develop
+        Capability building
       </text>
       <text x={l + pw - 8} y={t + ph - 8} textAnchor="end" className="sub">
-        Low risk
+        Monitor
       </text>
       <text x={l + pw / 2} y={H - 4} textAnchor="middle" className="ax">
         ESG performance score (0–100) →

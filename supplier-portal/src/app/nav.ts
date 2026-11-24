@@ -46,7 +46,7 @@ export const NAV: NavGroup[] = [
 
 /** Page titles for document.title, keyed by first path segment. */
 export const PAGE_TITLES: Record<string, string> = {
-  dashboard: 'Dashboard',
+  dashboard: 'Supplier ESG Dashboard',
   suppliers: 'Suppliers',
   assessments: 'Assessments',
   reviews: 'Reviews',

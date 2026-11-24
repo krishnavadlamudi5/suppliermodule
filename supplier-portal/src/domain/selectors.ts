@@ -183,9 +183,9 @@ export function funnelStages(d: PortalData, list: Assignment[]): FunnelStageData
     tier2: l.filter((a) => supplierById(d, a.supplierId)?.tier === 2).length,
   });
   return [
-    { name: 'Added', ...split(list) },
+    { name: 'Assigned', ...split(list) },
     { name: 'Invited', ...split(invited) },
-    { name: 'Started', ...split(started) },
+    { name: 'In progress', ...split(started) },
     { name: 'Submitted', ...split(submitted) },
     { name: 'Reviewed', ...split(reviewed) },
   ];
