@@ -4,7 +4,7 @@
     {
       "name": "supplier-portal",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "supplier-portal", "run", "dev"],
+      "runtimeArgs": ["run", "dev"],
       "port": 5173
     }
   ]

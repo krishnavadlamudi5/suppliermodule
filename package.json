@@ -1,0 +1,17 @@
+{
+  "name": "supplier-esg-portal",
+  "private": true,
+  "description": "Bharat Carbon Supplier ESG portal — frontend (React) + backend (Express/MongoDB) + shared domain code",
+  "scripts": {
+    "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install",
+    "dev": "concurrently -n api,web -c green,blue \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:mock": "npm --prefix frontend run dev:mock",
+    "build": "npm --prefix frontend run build && npm --prefix backend run typecheck",
+    "start": "npm --prefix backend run start",
+    "test": "npm --prefix frontend test",
+    "db:reset": "npm --prefix backend run db:reset"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
+}
