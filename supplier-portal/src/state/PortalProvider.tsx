@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Spin, Result } from 'antd';
+import { App, Spin, Result } from 'antd';
 import { Button } from '../components/Button/Button';
-import { PortalStore } from './store';
+import { PortalStore, SaveError } from './store';
 import { PortalContext } from './context';
 import { usePortalSnapshot } from './hooks';
 import type { PortalRepository } from '../data/repository';
@@ -11,9 +11,29 @@ import type { PortalRepository } from '../data/repository';
 export function PortalProvider({ repository, children }: { repository: PortalRepository; children: ReactNode }) {
   const [store] = useState(() => new PortalStore(repository));
 
+  const { message } = App.useApp();
+
   useEffect(() => {
     store.load();
   }, [store]);
+
+  // One clear message when a change fails to save; the change has already been undone.
+  useEffect(
+    () =>
+      store.onSaveError((m) =>
+        message.error({ content: `Your last change wasn't saved and has been undone. ${m}`, duration: 6, key: 'save-error' }),
+      ),
+    [store, message],
+  );
+
+  // Callers may not catch SaveError; it's already been reported, so keep the console quiet.
+  useEffect(() => {
+    const onRejection = (e: PromiseRejectionEvent) => {
+      if (e.reason instanceof SaveError) e.preventDefault();
+    };
+    window.addEventListener('unhandledrejection', onRejection);
+    return () => window.removeEventListener('unhandledrejection', onRejection);
+  }, []);
 
   return (
     <PortalContext.Provider value={store}>

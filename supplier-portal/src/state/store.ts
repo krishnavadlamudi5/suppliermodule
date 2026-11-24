@@ -1,5 +1,5 @@
 import { applyCommand, nextId } from '../domain/commands';
-import type { AssignmentRef, PortalCommand } from '../domain/commands';
+import type { AssignmentRef, PortalCommand, SupplierPatch } from '../domain/commands';
 import type {
   ActionStatus,
   AssessmentDraft,
@@ -17,6 +17,15 @@ export interface StoreSnapshot {
   status: StoreStatus;
   data: PortalData | null;
   error: string | null;
+  /** Changes sent to the repository and not yet confirmed */
+  saving: number;
+  /** Message from the last change that failed to save (cleared by the next success) */
+  saveError: string | null;
+}
+
+/** Thrown to callers when a save fails. The store has already reported it to the user. */
+export class SaveError extends Error {
+  readonly reported = true;
 }
 
 /**
@@ -25,7 +34,8 @@ export interface StoreSnapshot {
  * back and the error re-thrown for the caller to show.
  */
 export class PortalStore {
-  private snapshot: StoreSnapshot = { status: 'loading', data: null, error: null };
+  private snapshot: StoreSnapshot = { status: 'loading', data: null, error: null, saving: 0, saveError: null };
+  private errorListeners = new Set<(message: string) => void>();
   private listeners = new Set<() => void>();
   private repo: PortalRepository;
 
@@ -42,9 +52,19 @@ export class PortalStore {
 
   getSnapshot = () => this.snapshot;
 
+  /** Get told when a change fails to save (used to show one error message). */
+  onSaveError = (fn: (message: string) => void) => {
+    this.errorListeners.add(fn);
+    return () => {
+      this.errorListeners.delete(fn);
+    };
+  };
+
   subscribe = (fn: () => void) => {
     this.listeners.add(fn);
-    return () => this.listeners.delete(fn);
+    return () => {
+      this.listeners.delete(fn);
+    };
   };
 
   private set(next: Partial<StoreSnapshot>) {
@@ -68,13 +88,17 @@ export class PortalStore {
 
   async dispatch(command: PortalCommand): Promise<void> {
     const before = this.data;
-    this.set({ data: applyCommand(before, command) });
+    const after = applyCommand(before, command);
+    this.set({ data: after, saving: this.snapshot.saving + 1 });
     try {
       await this.repo.execute(command);
+      this.set({ saving: this.snapshot.saving - 1, saveError: null });
     } catch (e) {
-      // Roll back only our change if nothing else has happened since
-      if (this.snapshot.data && this.snapshot.data !== before) this.set({ data: before });
-      throw e;
+      // Undo our change, unless something else has changed the data since
+      const message = e instanceof Error ? e.message : String(e);
+      this.set({ saving: this.snapshot.saving - 1, saveError: message, ...(this.snapshot.data === after ? { data: before } : {}) });
+      this.errorListeners.forEach((l) => l(message));
+      throw new SaveError(message);
     }
   }
 
@@ -144,6 +168,22 @@ export class PortalStore {
   launchAssessment(draft: AssessmentDraft) {
     const assessmentId = nextId(this.data.assessments.map((a) => a.id), 'A', 1);
     return this.dispatch({ type: 'launchAssessment', assessmentId, draft }).then(() => assessmentId);
+  }
+
+  markNotificationRead(id: string) {
+    return this.dispatch({ type: 'markNotificationRead', id });
+  }
+
+  closeAssessment(assessmentId: string) {
+    return this.dispatch({ type: 'closeAssessment', assessmentId });
+  }
+
+  updateSupplier(supplierId: string, patch: SupplierPatch) {
+    return this.dispatch({ type: 'updateSupplier', supplierId, patch });
+  }
+
+  setReviewDecisions(assessmentId: string, supplierId: string, questionCodes: string[], decision: ReviewDecision) {
+    return this.dispatch({ type: 'setReviewDecisions', assessmentId, supplierId, questionCodes, decision });
   }
 
   markAllNotificationsRead() {

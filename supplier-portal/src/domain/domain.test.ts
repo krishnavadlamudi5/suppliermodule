@@ -188,3 +188,48 @@ describe('store', () => {
     expect(store.getSnapshot().data).toBe(before);
   });
 });
+
+describe('UX audit additions', () => {
+  it('closes an assessment', () => {
+    const next = applyCommand(d, { type: 'closeAssessment', assessmentId: 'A4' });
+    expect(next.assessments.find((a) => a.id === 'A4')?.status).toBe('Closed');
+    expect(activeAssignments(next).some((x) => x.assessmentId === 'A4')).toBe(false);
+  });
+
+  it('edits supplier details, trimming text', () => {
+    const next = applyCommand(d, { type: 'updateSupplier', supplierId: 'SUP-010', patch: { name: ' Vertex Circuits Ltd ', spend: 175, tier: 2 } });
+    expect(supplierById(next, 'SUP-010')).toMatchObject({ name: 'Vertex Circuits Ltd', spend: 175, tier: 2, score: 56 });
+  });
+
+  it('accepts many answers at once without toggling existing decisions off', () => {
+    const once = applyCommand(d, { type: 'setReviewDecisions', assessmentId: 'A3', supplierId: 'SUP-010', questionCodes: ['E-01', 'E-02'], decision: 'accepted' });
+    const twice = applyCommand(once, { type: 'setReviewDecisions', assessmentId: 'A3', supplierId: 'SUP-010', questionCodes: ['E-01'], decision: 'accepted' });
+    expect(twice.reviewDecisions['A3|SUP-010|E-01']).toBe('accepted');
+    expect(twice.reviewDecisions['A3|SUP-010|E-02']).toBe('accepted');
+  });
+
+  it('marks a single notification read', () => {
+    const next = applyCommand(d, { type: 'markNotificationRead', id: 'n2' });
+    expect(next.notifications.filter((n) => n.unread).map((n) => n.id)).toEqual(['n1', 'n3']);
+  });
+
+  it('tracks saving and reports a failed save once', async () => {
+    let release!: () => void;
+    const repo: PortalRepository = {
+      load: async () => createSampleData(),
+      execute: () => new Promise<void>((_, reject) => (release = () => reject(new Error('Offline')))),
+    };
+    const store = new PortalStore(repo);
+    await store.load();
+    const seen: string[] = [];
+    store.onSaveError((m) => seen.push(m));
+    const pending = store.markNotificationRead('n1');
+    expect(store.getSnapshot().saving).toBe(1);
+    expect(store.getSnapshot().data?.notifications[0].unread).toBe(false); // optimistic
+    release();
+    await expect(pending).rejects.toThrow('Offline');
+    expect(store.getSnapshot()).toMatchObject({ saving: 0, saveError: 'Offline' });
+    expect(store.getSnapshot().data?.notifications[0].unread).toBe(true); // rolled back
+    expect(seen).toEqual(['Offline']);
+  });
+});

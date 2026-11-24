@@ -177,7 +177,7 @@ $rail-w: 64px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
 
-  &__search.ant-input-affix-wrapper {
+  &__search {
     width: 340px;
     color: var(--text-muted);
   }
@@ -197,8 +197,15 @@ $rail-w: 64px;
     flex: 1;
   }
 
-  &__year {
-    min-width: 150px;
+  &__programme {
+    padding: 5px 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-medium);
+    white-space: nowrap;
   }
 
   &__iconbtn {
@@ -328,8 +335,8 @@ $rail-w: 64px;
   .topbar {
     padding: 0 var(--space-5);
 
-    &__search.ant-input-affix-wrapper {
-      width: 240px;
+    &__search {
+      width: 240px !important;
     }
     &__sample,
     &__me-text {
@@ -441,14 +448,14 @@ $rail-w: 64px;
       display: grid;
     }
 
-    &__search.ant-input-affix-wrapper {
-      width: auto;
+    &__search {
+      width: auto !important;
       flex: 1;
       min-width: 0;
     }
 
     &__spacer,
-    &__year {
+    &__programme {
       display: none;
     }
 
@@ -478,5 +485,46 @@ $rail-w: 64px;
   .filter-bar .filter-bar__hint,
   .filter-bar .filter-bar__end {
     margin-left: 0;
+  }
+}
+
+/* ---------------- Save status & search results ---------------- */
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+
+  &--ok .anticon {
+    color: var(--success-700);
+  }
+
+  &--error {
+    color: var(--status-error-text);
+    font-weight: var(--fw-semibold);
+  }
+}
+
+@media (max-width: 1024px) {
+  .save-status--ok {
+    display: none;
+  }
+}
+
+.search-row {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+  white-space: normal;
+
+  b {
+    font-weight: var(--fw-semibold);
+  }
+
+  small {
+    color: var(--text-secondary);
+    font-size: var(--fs-sm);
   }
 }

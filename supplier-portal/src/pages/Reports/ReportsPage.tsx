@@ -24,11 +24,11 @@ export default function ReportsPage() {
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
-              <Button size="sm" variant="primary" onClick={() => toast.info(`${r.title}: export started`)}>
+              <Button size="sm" variant="primary" onClick={() => toast.notYet(`The ${r.title} export`)}>
                 Export
               </Button>
               {r.coverage != null && (
-                <Button size="sm" onClick={() => toast.info('Field mapping opens here')}>
+                <Button size="sm" onClick={() => toast.notYet('The field mapping view')}>
                   View field mapping
                 </Button>
               )}

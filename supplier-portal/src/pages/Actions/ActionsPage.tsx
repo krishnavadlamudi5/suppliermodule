@@ -110,7 +110,7 @@ function NewActionModal({ open, onClose }: { open: boolean; onClose: () => void 
   const submit = async () => {
     if (!supplierId) return;
     await createAction({ supplierId, title, owner: owner || supplierById(data, supplierId)?.contact || '', dueDate: due });
-    toast.success('Improvement action created and shared with the supplier');
+    toast.success('Improvement action created');
     setSupplierId(undefined);
     setTitle('');
     setOwner('');

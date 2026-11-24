@@ -11,8 +11,12 @@ import type {
   PortalData,
   ProgrammeSettings,
   ReviewDecision,
+  Supplier,
   SupplierDraft,
 } from './types';
+
+/** Editable supplier fields. */
+export type SupplierPatch = Partial<Pick<Supplier, 'name' | 'contact' | 'email' | 'category' | 'city' | 'spend' | 'facility' | 'tier'>>;
 
 export interface AssignmentRef {
   assessmentId: string;
@@ -32,6 +36,10 @@ export type PortalCommand =
   | { type: 'addSupplier'; supplierId: string; draft: SupplierDraft }
   | { type: 'launchAssessment'; assessmentId: string; draft: AssessmentDraft }
   | { type: 'markAllNotificationsRead' }
+  | { type: 'markNotificationRead'; id: string }
+  | { type: 'closeAssessment'; assessmentId: string }
+  | { type: 'updateSupplier'; supplierId: string; patch: SupplierPatch }
+  | { type: 'setReviewDecisions'; assessmentId: string; supplierId: string; questionCodes: string[]; decision: ReviewDecision }
   | { type: 'updateSettings'; patch: Partial<ProgrammeSettings> }
   | { type: 'updateOrg'; name: string; contactEmail: string };
 
@@ -210,6 +218,29 @@ export function applyCommand(d: PortalData, cmd: PortalCommand): PortalData {
               })),
             ],
       };
+    }
+
+    case 'markNotificationRead':
+      return { ...d, notifications: d.notifications.map((n) => (n.id === cmd.id ? { ...n, unread: false } : n)) };
+
+    case 'closeAssessment':
+      return { ...d, assessments: d.assessments.map((a) => (a.id === cmd.assessmentId ? { ...a, status: 'Closed' } : a)) };
+
+    case 'updateSupplier': {
+      const clean: SupplierPatch = {};
+      for (const [k, v] of Object.entries(cmd.patch) as [keyof SupplierPatch, SupplierPatch[keyof SupplierPatch]][]) {
+        if (v === undefined) continue;
+        (clean as Record<string, unknown>)[k] = typeof v === 'string' ? v.trim() : v;
+      }
+      return { ...d, suppliers: d.suppliers.map((s) => (s.id === cmd.supplierId ? { ...s, ...clean } : s)) };
+    }
+
+    case 'setReviewDecisions': {
+      const next = { ...d.reviewDecisions };
+      cmd.questionCodes.forEach((code) => {
+        next[answerKey(cmd.assessmentId, cmd.supplierId, code)] = cmd.decision;
+      });
+      return { ...d, reviewDecisions: next };
     }
 
     case 'markAllNotificationsRead':

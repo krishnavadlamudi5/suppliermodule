@@ -14,7 +14,9 @@ export function createHttpRepository(baseUrl = '/api'): PortalRepository {
     } catch {
       /* not JSON */
     }
-    throw new Error(`${what} failed (${res.status})${detail ? `: ${detail}` : ''}`);
+    // 502-504 come from the dev proxy or a gateway when the API itself is down
+    if (res.status >= 502 && res.status <= 504) throw new Error('The server could not be reached. Check your connection and try again.');
+    throw new Error(`${what} failed${detail ? `: ${detail}` : ` (error ${res.status})`}`);
   };
 
   return {
@@ -30,11 +32,16 @@ export function createHttpRepository(baseUrl = '/api'): PortalRepository {
     },
 
     async execute(command: PortalCommand) {
-      const res = await fetch(`${baseUrl}/commands`, {
+      let res: Response;
+      try {
+        res = await fetch(`${baseUrl}/commands`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(command),
-      });
+          body: JSON.stringify(command),
+        });
+      } catch {
+        throw new Error('The server could not be reached. Check your connection and try again.');
+      }
       if (!res.ok) await fail(res, 'Saving the change');
     },
   };

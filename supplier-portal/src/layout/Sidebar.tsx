@@ -61,12 +61,14 @@ export function Sidebar({
       ))}
 
       <div className="sidebar__foot">
-        <Link to="/design-system" className={`sidebar__link sidebar__link--quiet${active === 'design-system' ? ' is-active' : ''}`} title="Design system">
-          <NavIcon name="palette" size={16} />
-          <span className="sidebar__label">Design system</span>
-        </Link>
+        {import.meta.env.DEV && (
+          <Link to="/design-system" className={`sidebar__link sidebar__link--quiet${active === 'design-system' ? ' is-active' : ''}`} title="Design system (development only)">
+            <NavIcon name="palette" size={16} />
+            <span className="sidebar__label">Design system</span>
+          </Link>
+        )}
         <div className="sidebar__powered">
-          Powered by <b>Bharat Carbon</b> · <a href="#help">Help &amp; methodology</a>
+          <Link to="/questionnaires/scoring">How scoring works</Link>
         </div>
       </div>
     </aside>

@@ -17,13 +17,22 @@ export function AppLayout() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const data = usePortal();
-  const { markAllNotificationsRead } = usePortalActions();
+  const { markAllNotificationsRead, markNotificationRead } = usePortalActions();
 
   const mainRef = useRef<HTMLElement>(null);
   const lastPath = useRef(pathname);
 
   useEffect(() => {
-    document.title = `${PAGE_TITLES[section] ?? 'Dashboard'} · Supplier ESG Assessment`;
+    const [, , id, id2] = pathname.split('/');
+    const name =
+      section === 'suppliers' && id
+        ? data.suppliers.find((s) => s.id === id)?.name
+        : section === 'assessments' && id === 'detail'
+          ? data.assessments.find((a) => a.id === id2)?.title
+          : section === 'response' && id2
+            ? data.suppliers.find((s) => s.id === id2)?.name
+            : null;
+    document.title = `${name ? `${name} · ` : ''}${PAGE_TITLES[section] ?? 'Not found'} · Supplier ESG Assessment`;
     window.scrollTo(0, 0);
     // After in-app navigation, move focus to the new page so keyboard and
     // screen-reader users start at its content rather than the old position.
@@ -31,7 +40,7 @@ export function AppLayout() {
       lastPath.current = pathname;
       mainRef.current?.focus({ preventScroll: true });
     }
-  }, [pathname, section]);
+  }, [pathname, section, data]);
 
   return (
     <DrawerHost>
@@ -58,8 +67,7 @@ export function AppLayout() {
       </Drawer>
       <div className="app-shell__main">
         <TopBar
-          user={data.user}
-          years={data.programmeYears}
+          data={data}
           unread={data.notifications.filter((n) => n.unread).length}
           onOpenNotifications={() => setNotifOpen(true)}
           onOpenMenu={() => setMenuOpen(true)}
@@ -74,6 +82,7 @@ export function AppLayout() {
         items={data.notifications}
         onClose={() => setNotifOpen(false)}
         onReadAll={markAllNotificationsRead}
+        onRead={markNotificationRead}
       />
     </div>
     </DrawerHost>

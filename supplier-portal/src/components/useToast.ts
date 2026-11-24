@@ -10,5 +10,7 @@ export function useToast() {
     success: (text: string) => message.success(text),
     info: (text: string) => message.info(text),
     error: (text: string) => message.error(text),
+    /** For buttons whose feature isn't built yet — says so plainly instead of pretending it worked. */
+    notYet: (feature: string) => message.info({ content: `${feature} isn't available in this version yet.`, key: 'not-yet' }),
   };
 }

@@ -124,7 +124,7 @@ export function FlagCausesCard({ flags }: { flags: RedFlag[] }) {
     <Card
       title={
         flags.length
-          ? `${flags.length} red flag${flags.length === 1 ? '' : 's'} across ${suppliers} supplier${suppliers === 1 ? '' : 's'}; most common: ${top.l.toLowerCase()}`
+          ? `${flags.length} red flag${flags.length === 1 ? '' : 's'} across ${suppliers} supplier${suppliers === 1 ? '' : 's'}; most common: ${top.l.charAt(0).toLowerCase()}${top.l.slice(1)}`
           : 'No open red flags'
       }
       question="Which red-flag causes come up most? Open and with an action raised."

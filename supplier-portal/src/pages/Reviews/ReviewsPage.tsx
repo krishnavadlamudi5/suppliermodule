@@ -11,6 +11,7 @@ import { CellTitle, DocChip } from '../../components/blocks/Blocks';
 import { MessageList } from '../../components/domain/DomainBits';
 import { EmptyState } from '../../components/EmptyState/EmptyState';
 import { useToast } from '../../components/useToast';
+import { useConfirm } from '../../components/useConfirm';
 import { usePortal, usePortalActions } from '../../state/hooks';
 import { activeAssignments, assessmentById, needs, riskOf, supplierById } from '../../domain/selectors';
 import type { Assignment, Evidence, PortalData, RedFlag } from '../../domain/types';
@@ -104,7 +105,18 @@ function EvidenceTab({ data }: { data: PortalData }) {
   const toast = useToast();
   const rows = data.evidence.filter((e) => e.status === 'Pending');
 
+  const confirm = useConfirm();
   const decide = async (e: Evidence, status: 'Accepted' | 'Rejected') => {
+    if (
+      status === 'Rejected' &&
+      !(await confirm({
+        title: `Reject ${e.fileName}?`,
+        content: `${supplierById(data, e.supplierId)?.name} will need to upload a new document for “${e.question}”.`,
+        okText: 'Reject document',
+        danger: true,
+      }))
+    )
+      return;
     await setEvidenceStatus(e.id, status);
     toast.success(`${e.fileName} ${status.toLowerCase()}`);
   };
@@ -214,7 +226,7 @@ function FlagsTab({ data }: { data: PortalData }) {
             variant="primary"
             onClick={async () => {
               await raiseAction(f.id);
-              toast.success('Improvement action raised and shared with the supplier');
+              toast.success('Improvement action raised');
             }}
           >
             Raise action

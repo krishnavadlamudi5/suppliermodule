@@ -36,7 +36,7 @@ export default function MaterialityPage() {
         subtitle="Double materiality: impact on people and planet × financial importance to the business"
         actions={
           <>
-            <Button onClick={() => toast.info('Matrix exported')}>Export matrix</Button>
+            <Button onClick={() => toast.notYet('Exporting the matrix')}>Export matrix</Button>
             <Button variant="primary" icon={<PlusOutlined />} onClick={() => openNewAssessment({ type: 'Materiality' })}>
               New materiality assessment
             </Button>
@@ -136,10 +136,10 @@ function SurveyTab({ data }: { data: PortalData }) {
           />
         </ChartFigure>
         <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Button size="sm" onClick={() => toast.success(`Reminder sent to ${total - done} stakeholders who haven't responded`)}>
+          <Button size="sm" onClick={() => toast.notYet('Sending reminder emails')}>
             Remind non-responders
           </Button>
-          <Button size="sm" onClick={() => toast.info('Add stakeholders opens here')}>
+          <Button size="sm" onClick={() => toast.notYet('Adding stakeholders')}>
             + Add stakeholders
           </Button>
         </div>

@@ -19,6 +19,7 @@ const Quality = lazy(() => import('../pages/Quality/QualityPage'));
 const Reports = lazy(() => import('../pages/Reports/ReportsPage'));
 const Questionnaires = lazy(() => import('../pages/Questionnaires/QuestionnairesPage'));
 const Settings = lazy(() => import('../pages/Settings/SettingsPage'));
+const NotFound = lazy(() => import('../pages/NotFound/NotFoundPage'));
 
 const page = (el: ReactNode) => (
   <Suspense
@@ -57,7 +58,7 @@ export const router = createBrowserRouter([
       { path: 'questionnaires/:tab?', element: page(<Questionnaires />) },
       { path: 'settings/:tab?', element: page(<Settings />) },
       { path: 'design-system', element: page(<DesignSystem />) },
-      { path: '*', element: <Navigate to="/dashboard" replace /> },
+      { path: '*', element: page(<NotFound />) },
     ],
   },
 ]);

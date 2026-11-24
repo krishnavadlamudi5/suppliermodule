@@ -11,9 +11,10 @@ interface Props {
   items: Notification[];
   onClose: () => void;
   onReadAll: () => void;
+  onRead: (id: string) => void;
 }
 
-export function NotificationsDrawer({ open, items, onClose, onReadAll }: Props) {
+export function NotificationsDrawer({ open, items, onClose, onReadAll, onRead }: Props) {
   const toast = useToast();
   return (
     <SideDrawer
@@ -27,7 +28,7 @@ export function NotificationsDrawer({ open, items, onClose, onReadAll }: Props) 
             Mark all read
           </Button>
           <span className="spacer" />
-          <Button size="sm" variant="ghost" onClick={() => toast.info('Daily digest settings are in Settings → Reminders & automation')}>
+          <Button size="sm" variant="ghost" onClick={() => toast.notYet('The daily email digest')}>
             Email me a daily digest
           </Button>
         </>
@@ -39,7 +40,14 @@ export function NotificationsDrawer({ open, items, onClose, onReadAll }: Props) 
         <ul className="notif-list">
           {items.map((n) => (
             <li key={n.id}>
-              <Link to={n.to} onClick={onClose} className={`notif-list__item${n.unread ? ' is-unread' : ''}`}>
+              <Link
+                to={n.to}
+                onClick={() => {
+                  if (n.unread) onRead(n.id);
+                  onClose();
+                }}
+                className={`notif-list__item${n.unread ? ' is-unread' : ''}`}
+              >
                 {n.unread && <span className="notif-list__dot" aria-label="Unread" />}
                 <span>
                   <b>{n.title}</b>

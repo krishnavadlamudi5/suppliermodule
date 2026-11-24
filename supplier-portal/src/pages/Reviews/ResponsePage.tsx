@@ -12,6 +12,7 @@ import { EmptyState } from '../../components/EmptyState/EmptyState';
 import { HBarChart } from '../../components/charts/HBarChart';
 import { C } from '../../components/charts/chartKit';
 import { useToast } from '../../components/useToast';
+import { useConfirm } from '../../components/useConfirm';
 import { usePortal, usePortalActions } from '../../state/hooks';
 import { AREAS, AREA_SHORT, ASSIGNMENT_LABEL } from '../../domain/constants';
 import { answerKey, assessmentById, riskOf, supplierById, threadFor } from '../../domain/selectors';
@@ -23,7 +24,8 @@ import './ResponsePage.scss';
 export default function ResponsePage() {
   const { assessmentId = '', supplierId = '' } = useParams();
   const data = usePortal();
-  const { markReviewed, sendBack } = usePortalActions();
+  const { markReviewed, sendBack, setReviewDecisions } = usePortalActions();
+  const confirm = useConfirm();
   const toast = useToast();
   const navigate = useNavigate();
   const { hash } = useLocation();
@@ -69,6 +71,42 @@ export default function ResponsePage() {
   const flagged = questions.filter((q) => decisionOf(q) === 'flagged').length;
   const waiting = questions.filter((q) => threadFor(data, a.id, s.id, q.code)?.messages.at(-1)?.from === 'supplier').length;
   const ref = { assessmentId: a.id, supplierId: s.id };
+  const unchecked = questions.filter((q) => decisionOf(q) == null);
+  const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
+
+  const acceptRemaining = async () => {
+    if (!unchecked.length) return;
+    await setReviewDecisions(a.id, s.id, unchecked.map((q) => q.code), 'accepted');
+    toast.success(`${unchecked.length} ${plural(unchecked.length, 'answer', 'answers')} accepted`);
+  };
+
+  const doSendBack = async () => {
+    const ok = await confirm({
+      title: `Send this response back to ${s.name}?`,
+      content:
+        flagged || waiting
+          ? `They'll be asked to update ${flagged} flagged ${plural(flagged, 'answer', 'answers')} and see your questions. The response moves to Reopened.`
+          : "You haven't flagged any answers or asked anything, so they won't know what to change. Flag or ask on the answers first.",
+      okText: 'Send back',
+    });
+    if (!ok) return;
+    await sendBack(ref);
+    toast.success(`Sent back to ${s.name}`);
+    navigate('/reviews/responses');
+  };
+
+  const doMarkReviewed = async () => {
+    if (unchecked.length || flagged) {
+      const parts: string[] = [];
+      if (unchecked.length) parts.push(`${unchecked.length} ${plural(unchecked.length, "answer hasn't", "answers haven't")} been checked.`);
+      if (flagged) parts.push(`${flagged} ${plural(flagged, 'answer is', 'answers are')} flagged, so consider sending it back instead.`);
+      const ok = await confirm({ title: 'Mark reviewed with answers still open?', content: parts.join(' '), okText: 'Mark reviewed anyway' });
+      if (!ok) return;
+    }
+    await markReviewed(ref);
+    toast.success(`${s.name} marked reviewed`);
+    navigate('/reviews/responses');
+  };
 
   return (
     <>
@@ -78,7 +116,7 @@ export default function ResponsePage() {
         subtitle={`Submitted by ${s.contact}${x.submittedOn ? ` on ${formatDate(x.submittedOn)}` : ''} · ${x.answered}/${a.questionCount} answered · ${ASSIGNMENT_LABEL[x.status]}`}
         actions={
           <>
-            <Button onClick={() => toast.info('Score override opens here')}>Override score</Button>
+            <Button onClick={() => toast.notYet('Overriding a score')}>Override score</Button>
             <Link to={`/suppliers/${s.id}`}>
               <Button>Supplier profile</Button>
             </Link>
@@ -101,26 +139,15 @@ export default function ResponsePage() {
               <b>{questions.length - accepted - flagged}</b> to check
             </span>
             <span className="review-bar__actions">
-            <Button
-              onClick={async () => {
-                await sendBack(ref);
-                toast.success(`Sent back to ${s.name} with your flags and questions`);
-                navigate('/reviews/responses');
-              }}
-            >
-              Send back to supplier
-            </Button>
-            <Button
-              variant="primary"
-              disabled={x.status === 'reviewed'}
-              onClick={async () => {
-                await markReviewed(ref);
-                toast.success(`${s.name} marked reviewed`);
-                navigate('/reviews/responses');
-              }}
-            >
-              {x.status === 'reviewed' ? 'Reviewed' : 'Mark reviewed'}
-            </Button>
+              {unchecked.length > 0 && (
+                <Button variant="ghost" onClick={acceptRemaining}>
+                  Accept all {unchecked.length} unchecked
+                </Button>
+              )}
+              <Button onClick={doSendBack}>Send back to supplier</Button>
+              <Button variant="primary" disabled={x.status === 'reviewed'} onClick={doMarkReviewed}>
+                {x.status === 'reviewed' ? 'Reviewed' : 'Mark reviewed'}
+              </Button>
             </span>
           </div>
         </div>
@@ -134,8 +161,7 @@ export default function ResponsePage() {
                   ...(x.status === 'reviewed' ? [{ title: 'Marked reviewed', meta: 'Your team' }] : []),
                   ...(x.status === 'reopened' ? [{ title: 'Sent back for changes', meta: 'Your team' }] : []),
                   ...(x.submittedOn ? [{ title: 'Submitted', meta: `${s.contact} · ${formatDate(x.submittedOn)}` }] : []),
-                  { title: 'Started answering', meta: s.contact },
-                  { title: 'Invitation sent', meta: `Your team · due ${formatDate(x.dueDate)}` },
+                  { title: 'Invited', meta: `Due ${formatDate(x.dueDate)}` },
                   { title: 'Added to the assessment', meta: formatDate(a.startedOn) },
                 ]}
               />
@@ -152,6 +178,7 @@ export default function ResponsePage() {
 function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessment; s: Supplier; q: Question; decision: 'accepted' | 'flagged' | null }) {
   const { toggleReviewDecision, sendMessage, setEvidenceStatus } = usePortalActions();
   const toast = useToast();
+  const confirm = useConfirm();
   const thread = threadFor(data, a.id, s.id, q.code);
   const [open, setOpen] = useState(!!thread);
   const [draft, setDraft] = useState('');
@@ -162,7 +189,7 @@ function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessme
     if (!draft.trim()) return;
     await sendMessage(a.id, s.id, q.code, draft);
     setDraft('');
-    toast.success('Question sent; the supplier is emailed and sees it on this answer');
+    toast.success('Question added to this answer');
   };
 
   return (
@@ -185,36 +212,52 @@ function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessme
         {sampleAnswer(data, s, q)}
         {flag && <div className="answer__flag">⚑ {flag.text}</div>}
       </div>
-      <div className="answer__actions">
-        {q.evidenceRequired &&
-          (ev ? (
+      {q.evidenceRequired && (
+        <div className="answer__evidence">
+          <span className="answer__label">Evidence</span>
+          {ev ? (
             <>
               <DocChip name={ev.fileName} />
               <Pill tone={ev.status === 'Pending' ? 'warning' : ev.status === 'Accepted' ? 'success' : 'error'}>
-                {ev.status === 'Pending' ? 'Document to verify' : `Document ${ev.status.toLowerCase()}`}
+                {ev.status === 'Pending' ? 'To verify' : ev.status}
               </Pill>
               {ev.status === 'Pending' && (
-                <>
-                  <Button size="sm" variant="ghost" onClick={() => setEvidenceStatus(ev.id, 'Accepted').then(() => toast.success('Document accepted'))}>
+                <span className="answer__evidence-actions">
+                  <Button size="sm" variant="accept" onClick={() => setEvidenceStatus(ev.id, 'Accepted').then(() => toast.success('Document accepted'))}>
                     Accept document
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEvidenceStatus(ev.id, 'Rejected').then(() => toast.success('Document rejected'))}>
-                    Reject
+                  <Button
+                    size="sm"
+                    variant="reject"
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: `Reject ${ev.fileName}?`,
+                        content: `${s.name} will need to upload a new document for this answer.`,
+                        okText: 'Reject document',
+                        danger: true,
+                      });
+                      if (ok) await setEvidenceStatus(ev.id, 'Rejected').then(() => toast.success('Document rejected'));
+                    }}
+                  >
+                    Reject document
                   </Button>
-                </>
+                </span>
               )}
             </>
           ) : flag ? (
             <Pill tone="error">Document missing</Pill>
           ) : (
-            <DocChip name="Evidence on file" />
-          ))}
-        <span className="spacer" />
+            <span className="answer__note">Accepted in an earlier review</span>
+          )}
+        </div>
+      )}
+      <div className="answer__actions">
+        <span className="answer__label">Your review</span>
         <Button size="sm" variant="accept" aria-pressed={decision === 'accepted'} onClick={() => toggleReviewDecision(a.id, s.id, q.code, 'accepted')}>
-          Accept
+          {decision === 'accepted' ? '✓ Answer accepted' : 'Accept answer'}
         </Button>
         <Button size="sm" variant="reject" aria-pressed={decision === 'flagged'} onClick={() => toggleReviewDecision(a.id, s.id, q.code, 'flagged')}>
-          Flag
+          {decision === 'flagged' ? '⚑ Flagged' : 'Flag answer'}
         </Button>
         <Button size="sm" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           Ask supplier{thread ? ` (${thread.messages.length})` : ''}

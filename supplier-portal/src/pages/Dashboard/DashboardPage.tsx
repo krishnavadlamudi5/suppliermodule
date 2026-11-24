@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Segmented, Select } from 'antd';
 import { PageHeader } from '../../components/PageHeader/PageHeader';
-import { CardGrid } from '../../components/Card/Card';
 import { FilterBar, NeedCard } from '../../components/blocks/Blocks';
 import { usePortal } from '../../state/hooks';
 import { activeAssignments, funnelStages, needs, supplierById } from '../../domain/selectors';
@@ -20,8 +20,16 @@ type TierFilter = 'all' | Tier;
 
 export default function DashboardPage() {
   const data = usePortal();
-  const [tier, setTier] = useState<TierFilter>('all');
-  const [facility, setFacility] = useState('all');
+  // Filters are kept in the URL so they survive Back and can be shared
+  const [params, setParams] = useSearchParams();
+  const tier: TierFilter = params.get('tier') === '1' ? 1 : params.get('tier') === '2' ? 2 : 'all';
+  const facility = params.get('facility') ?? 'all';
+  const setFilter = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (value === 'all') next.delete(key);
+    else next.set(key, value);
+    setParams(next, { replace: true });
+  };
 
   const view = useMemo(() => {
     const keep = (supplierId: string) => {
@@ -42,12 +50,12 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle={`${data.org.programme} · ${data.programmeYears[0]} · red flags count across all assessments`} />
+      <PageHeader title="Dashboard" subtitle={`${data.org.name} · ${data.org.programme} ${data.programmeYears[0]}`} />
 
       <div className="needs-row">
-        <NeedCard count={n.review} title="Responses to review" detail="Opens Reviews" to="/reviews/responses" />
+        <NeedCard count={n.review} title="Responses to review" detail="Submitted, waiting for your team" to="/reviews/responses" />
         <NeedCard count={n.overdue + n.notInvited} title="Overdue or not invited" detail={`${n.overdue} overdue · ${n.notInvited} never invited`} to="/assessments" />
-        <NeedCard count={n.flags} title="Open red flags" detail={`${n.flagsAll} incl. those with actions`} to="/reviews/flags" />
+        <NeedCard count={n.flags} title="Open red flags" detail={`${n.flagsAll - n.flags} more already have an action`} to="/reviews/flags" />
         <NeedCard
           count={n.evidence + n.questions}
           title="Evidence & questions"
@@ -60,7 +68,7 @@ export default function DashboardPage() {
         <span className="filter-bar__label">Show</span>
         <Segmented<TierFilter>
           value={tier}
-          onChange={setTier}
+          onChange={(v) => setFilter('tier', String(v))}
           options={[
             { value: 'all', label: 'All tiers' },
             { value: 1, label: 'Tier 1' },
@@ -69,7 +77,7 @@ export default function DashboardPage() {
         />
         <Select
           value={facility}
-          onChange={setFacility}
+          onChange={(v) => setFilter('facility', v)}
           style={{ minWidth: 170 }}
           aria-label="Facility"
           options={[{ value: 'all', label: 'All facilities' }, ...data.facilities.map((f) => ({ value: f.name, label: f.name }))]}
@@ -77,17 +85,20 @@ export default function DashboardPage() {
         <span className="filter-bar__hint">Hover any mark for detail · click a supplier to open it</span>
       </FilterBar>
 
-      <CardGrid cols={2}>
-        <FunnelCard stages={view.stages} single={tier !== 'all'} notInvited={view.notInvited} />
-        <RiskMatrixCard data={data} suppliers={view.scored} />
-        <HeatmapCard suppliers={view.scored} />
+      {/* Two independent columns, so cards of different heights don't leave gaps */}
+      <div className="dashboard-columns">
         <div className="stack">
+          <FunnelCard stages={view.stages} single={tier !== 'all'} notInvited={view.notInvited} />
+          <HeatmapCard suppliers={view.scored} />
+          <AreaTrendCard data={data} suppliers={view.scored} />
+        </div>
+        <div className="stack">
+          <RiskMatrixCard data={data} suppliers={view.scored} />
           <MaturityCard data={data} tiers={tier === 'all' ? [1, 2] : [tier]} suppliers={view.scored} />
           <FlagCausesCard flags={view.flags} />
+          <MaterialityCard data={data} />
         </div>
-        <AreaTrendCard data={data} suppliers={view.scored} />
-        <MaterialityCard data={data} />
-      </CardGrid>
+      </div>
     </>
   );
 }

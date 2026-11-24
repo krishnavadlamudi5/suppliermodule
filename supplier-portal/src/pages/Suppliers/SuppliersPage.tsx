@@ -27,8 +27,14 @@ export default function SuppliersPage() {
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
-  const [tier, setTier] = useState<'all' | Tier>('all');
-  const [risk, setRisk] = useState<RiskFilter>('all');
+  const tier: 'all' | Tier = params.get('tier') === '1' ? 1 : params.get('tier') === '2' ? 2 : 'all';
+  const risk = (params.get('risk') ?? 'all') as RiskFilter;
+  const setFilter = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (!value || value === 'all') next.delete(key);
+    else next.set(key, value);
+    setParams(next, { replace: true });
+  };
   const [selected, setSelected] = useState<string[]>([]);
 
   const rows = useMemo(() => {
@@ -46,13 +52,13 @@ export default function SuppliersPage() {
 
   const inviteNeverInvited = async () => {
     const n = await inviteAllNotInvited({ supplierIds: neverInvited.map((s) => s.id) });
-    toast.success(`${n} invitation${n === 1 ? '' : 's'} sent`);
+    toast.success(`${n} supplier${n === 1 ? '' : 's'} invited`);
   };
 
   const inviteSelected = async () => {
     const n = await inviteAllNotInvited({ supplierIds: selected });
     setSelected([]);
-    toast.success(n ? `${n} invitation${n === 1 ? '' : 's'} sent` : 'Everyone selected is already invited');
+    toast.success(n ? `${n} supplier${n === 1 ? '' : 's'} invited` : 'Everyone selected is already invited');
   };
 
   const addSelectedToAssessment = () => {
@@ -101,9 +107,9 @@ export default function SuppliersPage() {
               trigger={['click']}
               menu={{
                 items: [
-                  { key: 'csv', label: 'Upload a CSV or Excel file', onClick: () => toast.info('CSV upload opens here') },
-                  { key: 'tpl', label: 'Download the template', onClick: () => toast.info('Template downloaded') },
-                  { key: 'bc', label: 'Import from Bharat Carbon', onClick: () => toast.info('Import from Bharat Carbon opens here') },
+                  { key: 'csv', label: 'Upload a CSV or Excel file', onClick: () => toast.notYet('Importing from a file') },
+                  { key: 'tpl', label: 'Download the template', onClick: () => toast.notYet('The import template') },
+                  { key: 'bc', label: 'Import from Bharat Carbon', onClick: () => toast.notYet('Importing from Bharat Carbon') },
                 ],
               }}
             >
@@ -140,12 +146,12 @@ export default function SuppliersPage() {
           style={{ width: 260 }}
           placeholder="Search name, category, city"
           value={q}
-          onChange={(e) => setParams(e.target.value ? { q: e.target.value } : {}, { replace: true })}
+          onChange={(e) => setFilter('q', e.target.value)}
           aria-label="Search suppliers"
         />
         <Segmented<'all' | Tier>
           value={tier}
-          onChange={setTier}
+          onChange={(v) => setFilter('tier', String(v))}
           options={[
             { value: 'all', label: 'All tiers' },
             { value: 1, label: 'Tier 1' },
@@ -154,7 +160,7 @@ export default function SuppliersPage() {
         />
         <Segmented<RiskFilter>
           value={risk}
-          onChange={setRisk}
+          onChange={(v) => setFilter('risk', v)}
           options={[
             { value: 'all', label: 'Any risk' },
             { value: 'High', label: 'High' },

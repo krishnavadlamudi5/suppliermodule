@@ -17,6 +17,7 @@ import { HBarChart } from '../../components/charts/HBarChart';
 import { C } from '../../components/charts/chartKit';
 import { MATURITY_LEVELS } from '../../components/charts/scales';
 import { useToast } from '../../components/useToast';
+import { useConfirm } from '../../components/useConfirm';
 import { FunnelCard } from '../../features/insights/InsightCards';
 import { AddSuppliersModal } from '../../features/assessments/AddSuppliersModal';
 import { usePortal, usePortalActions } from '../../state/hooks';
@@ -75,7 +76,7 @@ export default function AssessmentDetailPage() {
         actions={
           a.status === 'Active' && (
             <>
-              <Button onClick={() => toast.success("Reminder sent to suppliers who haven't submitted")}>Send reminder now</Button>
+              <Button onClick={() => toast.notYet('Sending reminder emails')}>Send reminder now</Button>
               <Button variant="primary" icon={<PlusOutlined />} onClick={() => setAdding(true)}>
                 Add suppliers
               </Button>
@@ -135,7 +136,7 @@ function ProgressTab({ data, a, list }: { data: PortalData; a: Assessment; list:
                 variant="primary"
                 onClick={async () => {
                   const n = await inviteAllNotInvited({ assessmentId: a.id });
-                  toast.success(`${n} invitation${n === 1 ? '' : 's'} sent`);
+                  toast.success(`${n} supplier${n === 1 ? '' : 's'} invited`);
                 }}
               >
                 Invite {notInvited.length}, due {formatDateShort(defaultDue)}
@@ -204,7 +205,7 @@ function SuppliersTab({ data, a, list, onAdd }: { data: PortalData; a: Assessmen
               variant="primary"
               onClick={async () => {
                 await invite([{ assessmentId: a.id, supplierId: x.supplierId }]);
-                toast.success(`Invitation sent to ${name}`);
+                toast.success(`${name} invited`);
               }}
             >
               Invite
@@ -219,7 +220,7 @@ function SuppliersTab({ data, a, list, onAdd }: { data: PortalData; a: Assessmen
             </Link>
           );
         return (
-          <Button size="sm" onClick={() => toast.success(`Reminder sent to ${name}`)}>
+          <Button size="sm" onClick={() => toast.notYet('Sending reminder emails')}>
             Remind
           </Button>
         );
@@ -320,6 +321,22 @@ function ResultsTab({ data, a, list }: { data: PortalData; a: Assessment; list: 
 
 function SettingsTab({ data, a }: { data: PortalData; a: Assessment }) {
   const toast = useToast();
+  const confirm = useConfirm();
+  const { closeAssessment } = usePortalActions();
+  const open = assignmentsFor(data, a.id).filter((x) => !isSubmitted(x)).length;
+  const close = async () => {
+    const ok = await confirm({
+      title: `Close ${a.title}?`,
+      content: open
+        ? `${open} supplier${open === 1 ? " hasn't" : "s haven't"} submitted yet. Closing stops reminders and they can no longer answer.`
+        : 'Closing stops reminders and moves it to the Closed tab. Results stay available.',
+      okText: 'Close assessment',
+      danger: true,
+    });
+    if (!ok) return;
+    await closeAssessment(a.id);
+    toast.success(`${a.title} closed`);
+  };
   return (
     <CardGrid cols={2}>
       <Card title="Questions" question={`${a.questionCount} questions from the ${a.type} template${a.tier ? ` for Tier ${a.tier}` : ''}`}>
@@ -340,11 +357,11 @@ function SettingsTab({ data, a }: { data: PortalData; a: Assessment }) {
           ]}
         />
         <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-          <Button size="sm" onClick={() => toast.info('Export started')}>
+          <Button size="sm" onClick={() => toast.notYet('Exporting responses')}>
             Export responses
           </Button>
           {a.status === 'Active' && (
-            <Button size="sm" variant="danger" onClick={() => toast.info('Closing an assessment asks for confirmation here')}>
+            <Button size="sm" variant="danger" onClick={close}>
               Close assessment
             </Button>
           )}

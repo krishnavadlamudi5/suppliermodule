@@ -86,7 +86,7 @@ function OrgTab({ data }: { data: PortalData }) {
           ]}
         />
         <div style={{ marginTop: 10 }}>
-          <Button size="sm" icon={<PlusOutlined />} onClick={() => toast.info('Add facility opens here')}>
+          <Button size="sm" icon={<PlusOutlined />} onClick={() => toast.notYet('Adding facilities')}>
             Add facility
           </Button>
         </div>
@@ -147,7 +147,7 @@ function UsersTab({ data }: { data: PortalData }) {
       title="Users and roles"
       question="Admins can make changes; reviewers can accept evidence; viewers can only look"
       extra={
-        <Button size="sm" variant="primary" icon={<PlusOutlined />} onClick={() => toast.info('Invite user opens here')}>
+        <Button size="sm" variant="primary" icon={<PlusOutlined />} onClick={() => toast.notYet('Adding users')}>
           Add user
         </Button>
       }
@@ -243,7 +243,7 @@ function EmailsTab() {
           title={t}
           meta="Last edited by Bharat Carbon"
           action={
-            <Button size="sm" onClick={() => toast.info('Template editor opens here')}>
+            <Button size="sm" onClick={() => toast.notYet('Editing email templates')}>
               Edit
             </Button>
           }

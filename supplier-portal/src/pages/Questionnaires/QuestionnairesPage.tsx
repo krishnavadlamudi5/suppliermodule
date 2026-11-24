@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { Input, Select, Table } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
@@ -65,7 +65,7 @@ function TemplatesTab() {
               {t.questions ? `${t.questions} questions` : 'Empty'}
             </span>
             <span style={{ flex: 1 }} />
-            <Button size="sm" onClick={() => toast.info('Template editor opens here')}>
+            <Button size="sm" onClick={() => toast.notYet('The template editor')}>
               Edit
             </Button>
             <Button
@@ -84,7 +84,8 @@ function TemplatesTab() {
 
 function BankTab({ data }: { data: PortalData }) {
   const toast = useToast();
-  const [q, setQ] = useState('');
+  const [params] = useSearchParams();
+  const [q, setQ] = useState(params.get('q') ?? '');
   const [section, setSection] = useState('all');
   const sections = [...new Set(data.questions.map((x) => x.section))];
   const rows = useMemo(() => {
@@ -117,7 +118,7 @@ function BankTab({ data }: { data: PortalData }) {
       key: 'edit',
       align: 'right',
       render: () => (
-        <Button size="sm" variant="ghost" onClick={() => toast.info('Question editor opens here')}>
+        <Button size="sm" variant="ghost" onClick={() => toast.notYet('Editing questions')}>
           Edit
         </Button>
       ),
@@ -136,7 +137,7 @@ function BankTab({ data }: { data: PortalData }) {
           options={[{ value: 'all', label: 'All sections' }, ...sections.map((s) => ({ value: s, label: s }))]}
         />
         <span className="filter-bar__end">
-          <Button size="sm" variant="primary" icon={<PlusOutlined />} onClick={() => toast.info('New question form opens here')}>
+          <Button size="sm" variant="primary" icon={<PlusOutlined />} onClick={() => toast.notYet('Adding questions')}>
             Add question
           </Button>
         </span>

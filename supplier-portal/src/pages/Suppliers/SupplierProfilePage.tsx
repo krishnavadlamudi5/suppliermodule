@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Table } from 'antd';
 import type { TableColumnsType } from 'antd';
@@ -15,6 +16,7 @@ import { C } from '../../components/charts/chartKit';
 import { Pill } from '../../components/Pill/Pill';
 import { useToast } from '../../components/useToast';
 import { useDrawers } from '../../features/drawers/DrawerContext';
+import { EditSupplierModal } from '../../features/suppliers/EditSupplierModal';
 import { usePortal, usePortalActions } from '../../state/hooks';
 import { AREAS, ASSIGNMENT_LABEL, RISK_RULES } from '../../domain/constants';
 import {
@@ -42,6 +44,7 @@ export default function SupplierProfilePage() {
   const toast = useToast();
   const { openNewAssessment } = useDrawers();
   const s = supplierById(data, supplierId);
+  const [editing, setEditing] = useState(false);
 
   if (!s) {
     return (
@@ -79,7 +82,7 @@ export default function SupplierProfilePage() {
         }
         actions={
           <>
-            <Button onClick={() => toast.info('Editing supplier details opens here')}>Edit</Button>
+            <Button onClick={() => setEditing(true)}>Edit</Button>
             <Button
               onClick={() => {
                 navigate(`${base}/qa`);
@@ -113,6 +116,7 @@ export default function SupplierProfilePage() {
       {tab === 'flags' && <FlagsTab data={data} s={s} />}
       {tab === 'qa' && <QaTab data={data} s={s} />}
       {tab === 'activity' && <ActivityTab data={data} s={s} assigns={assigns} />}
+      <EditSupplierModal key={editing ? 'open' : 'closed'} supplier={s} open={editing} onClose={() => setEditing(false)} />
     </>
   );
 }
@@ -267,7 +271,7 @@ function AssessmentsTab({ data, s, assigns }: { data: PortalData; s: Supplier; a
             variant="primary"
             onClick={async () => {
               await invite([{ assessmentId: x.assessmentId, supplierId: s.id }]);
-              toast.success(`Invitation sent to ${s.name}`);
+              toast.success(`${s.name} invited`);
             }}
           >
             Invite
@@ -351,7 +355,7 @@ function FlagsTab({ data, s }: { data: PortalData; s: Supplier }) {
                     size="sm"
                     onClick={async () => {
                       await raiseAction(f.id);
-                      toast.success('Improvement action raised and shared with the supplier');
+                      toast.success('Improvement action raised');
                     }}
                   >
                     Raise action

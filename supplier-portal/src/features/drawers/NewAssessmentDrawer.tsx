@@ -71,7 +71,7 @@ export function NewAssessmentDrawer({ open, preset, onClose }: Props) {
     setBusy(true);
     try {
       const id = await launchAssessment({ ...a, title });
-      toast.success(isMat ? 'Materiality assessment launched' : `Launched · ${a.supplierIds.length} invitation${a.supplierIds.length === 1 ? '' : 's'} sent`);
+      toast.success(isMat ? 'Materiality assessment launched' : `Launched · ${a.supplierIds.length} supplier${a.supplierIds.length === 1 ? '' : 's'} invited`);
       onClose();
       navigate(isMat ? '/materiality/survey' : `/assessments/detail/${id}`);
     } catch (e) {
