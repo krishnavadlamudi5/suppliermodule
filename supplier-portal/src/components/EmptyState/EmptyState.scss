@@ -1,0 +1,15 @@
+.empty-state {
+  padding: 28px 10px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--fs-md);
+
+  &__action {
+    margin-top: 12px;
+  }
+}
+
+/* --text-muted is below 4.5:1 on grey fills, so use secondary text there */
+.board__col .empty-state {
+  color: var(--text-secondary);
+}

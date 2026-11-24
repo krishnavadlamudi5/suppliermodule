@@ -1,0 +1,17 @@
+# Dependencies and build output
+node_modules/
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Local / machine-specific
+*.local
+.env
+.env.*
+.claude/settings.local.json
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+*.log

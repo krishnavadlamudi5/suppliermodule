@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supplier ESG Assessment — Client portal (redesign prototype)</title>
+<style>
+:root{
+  --page:#f6f6f4; --surface:#ffffff; --chart:#fcfcfb; --ink:#141413; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --line:rgba(11,11,11,.10); --line2:rgba(11,11,11,.18);
+  --brand:#b3261e; --brand-ink:#8f1d17; --brand-soft:#fbecea;
+  --accent:#2a78d6; --accent-soft:#e8f1fc; --s2:#eb6834; --grey:#a9a8a2;
+  --good:#0ca30c; --good-ink:#006300; --warn:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --r:10px;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);font-size:14px;line-height:1.45}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,h4{margin:0}
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+/* Sidebar */
+.side{background:var(--surface);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:14px 12px 12px;overflow:auto}
+.org{display:flex;gap:10px;align-items:center;padding:4px 8px 10px}
+.org .av{width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.org b{display:block;font-size:14px}.org small{color:var(--ink2);font-size:12px}
+.grp{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted);padding:14px 10px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--ink2);font-weight:500;margin-bottom:1px}
+.nav a:hover{background:#f1f1ee;color:var(--ink)}
+.nav a.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:600}
+.nav svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav .cnt{margin-left:auto;background:var(--brand);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px;font-weight:600}
+.nav .new{margin-left:auto;font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:1px 6px}
+.side .foot{margin-top:auto;padding:12px 10px 0;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+
+/* Top bar */
+.main{min-width:0}
+.top{height:56px;display:flex;align-items:center;gap:12px;padding:0 28px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:8px;padding:6px 10px;width:340px;background:#fff}
+.search input{border:0;outline:0;width:100%;background:transparent}
+.search svg,.iconbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted)}
+.sample{font-size:11px;font-weight:600;color:#7a5a00;background:#fff3d1;border:1px solid #f3d27a;border-radius:6px;padding:2px 8px}
+.top .sp{flex:1}
+.iconbtn{position:relative;width:36px;height:36px;border-radius:8px;border:1px solid var(--line2);background:#fff;display:grid;place-items:center}
+.iconbtn svg{width:18px;height:18px;color:var(--ink2)}
+.iconbtn .dot{position:absolute;top:-4px;right:-4px;background:var(--brand);color:#fff;font-size:10px;font-weight:700;border-radius:9px;padding:1px 5px}
+.me{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:20px;padding:3px 10px 3px 3px;background:#fff;position:relative}
+.me .av{width:28px;height:28px;border-radius:50%;background:#e3efe0;color:#2f6b25;display:grid;place-items:center;font-size:12px;font-weight:700}
+.me b{font-size:13px;display:block;line-height:1.1}.me small{font-size:11px;color:var(--ink2)}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);min-width:200px;padding:6px;z-index:40;display:none}
+.menu.open{display:block}
+.menu a,.menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:6px}
+.menu a:hover,.menu button:hover{background:#f3f3f0}
+
+/* Page */
+.page{padding:24px 28px 60px;max-width:1320px}
+.ph{display:flex;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.ph h1{font-size:22px;font-weight:650;letter-spacing:-.01em}
+.ph p{margin:4px 0 0;color:var(--ink2)}
+.ph .acts{margin-left:auto;display:flex;gap:8px;align-items:center;position:relative}
+.crumb{font-size:12px;color:var(--ink2);margin-bottom:6px}
+.crumb a{color:var(--accent)}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:#f6f6f3}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.pri:hover{background:var(--brand-ink)}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ok{border-color:#9bd49b;color:var(--good-ink);background:#eef8ee}
+.btn.bad{border-color:#f0b2b2;color:#a52222;background:#fdf0f0}
+.link{color:var(--accent);font-weight:500}
+.link:hover{text-decoration:underline}
+
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;padding:6px 12px;color:var(--ink2);font-weight:500}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--ink);color:#fff}
+select.inp,input.inp,textarea.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 10px;background:#fff;width:100%}
+select.inp{width:auto}
+.inp:focus{outline:2px solid #b7d3f6;border-color:var(--accent)}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin:0 0 4px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fld{margin-bottom:14px}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tabs a{padding:9px 14px;color:var(--ink2);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a.on{color:var(--ink);border-color:var(--brand);font-weight:600}
+.tabs a .n{font-size:11px;background:#eeeeea;border-radius:9px;padding:1px 7px;margin-left:6px;color:var(--ink2)}
+.tabs a.on .n{background:var(--brand-soft);color:var(--brand-ink)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.card h3{font-size:15px;font-weight:650}
+.card .q{color:var(--ink2);font-size:13px;margin:3px 0 12px}
+.card .cf{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.span2{grid-column:span 2}
+.stack>*+*{margin-top:16px}
+
+/* Needs you */
+.needs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.need{background:#fff;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.need:hover{border-color:var(--line2);border-left-color:var(--brand);background:#fffdfc}
+.need .num{font-size:26px;font-weight:650;min-width:30px}
+.need b{display:block;font-size:13.5px}.need small{color:var(--ink2);font-size:12px}
+.need.zero{border-left-color:var(--grid)}
+.need.zero .num{color:var(--muted)}
+
+/* Tables */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tbl th{text-align:left;font-size:11.5px;font-weight:600;color:var(--ink2);letter-spacing:.02em;background:#fafaf8;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover td{background:#fbfbf9}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl td small{display:block;color:var(--muted);font-size:12px}
+.tbl a.nm{font-weight:600}
+.tbl a.nm:hover{color:var(--accent)}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:12px;padding:2px 9px;white-space:nowrap;border:1px solid transparent}
+.p-grey{background:#f0efec;color:var(--ink2)}
+.p-blue{background:var(--accent-soft);color:#1c5cab}
+.p-good{background:#eaf6ea;color:var(--good-ink)}
+.p-warn{background:#fff4d9;color:#7a5600}
+.p-crit{background:#fdecec;color:#a52222}
+.p-brand{background:var(--brand-soft);color:var(--brand-ink)}
+.tier{font-size:11px;font-weight:700;border-radius:5px;padding:1px 6px;border:1px solid var(--line2);color:var(--ink2)}
+.tier.t1{border-color:#e8a7a2;color:var(--brand-ink);background:#fff6f5}
+.risk{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.risk i{width:10px;height:10px;display:inline-block;flex:none}
+.risk.High i{background:var(--critical);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.risk.Medium i{background:var(--warn);transform:rotate(45deg);width:9px;height:9px}
+.risk.Low i{background:var(--good);border-radius:50%}
+.risk.na i{background:var(--grid);border-radius:2px}
+.bar{height:6px;background:#eeeee9;border-radius:4px;overflow:hidden;display:flex;gap:2px}
+.bar span{display:block;height:100%;border-radius:4px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin:-4px 0 8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* Charts */
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart text{font-size:12px;fill:var(--ink2)}
+svg.chart .lab{fill:var(--ink)}
+svg.chart .val{fill:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+svg.chart .sub{fill:var(--muted);font-size:11.5px}
+svg.chart .ax{fill:var(--muted);font-size:11px}
+svg.chart .grid{stroke:var(--grid);stroke-width:1}
+svg.chart .base{stroke:var(--axis);stroke-width:1}
+svg.chart [data-tip]{cursor:default}
+svg.chart [data-tip]:hover{opacity:.85}
+#tip{position:fixed;pointer-events:none;background:#1b1b1a;color:#fff;font-size:12px;line-height:1.4;padding:7px 10px;border-radius:7px;white-space:pre-line;z-index:100;opacity:0;transition:opacity .08s;max-width:260px}
+
+/* Drawer */
+.scrim{position:fixed;inset:0;background:rgba(20,20,19,.32);z-index:50;display:none}
+.scrim.open{display:block}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(620px,96vw);background:#fff;z-index:60;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .18s ease;box-shadow:-12px 0 32px rgba(0,0,0,.12)}
+.drawer.open{transform:none}
+.drawer .dh{padding:18px 24px 14px;border-bottom:1px solid var(--line)}
+.drawer .dh h2{font-size:18px}
+.drawer .db{padding:20px 24px;overflow:auto;flex:1}
+.drawer .df{padding:14px 24px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.drawer .df .sp{flex:1}
+.steps{display:flex;gap:6px;margin-top:12px}
+.steps div{flex:1;font-size:12px;color:var(--muted);border-top:3px solid var(--grid);padding-top:6px;font-weight:500}
+.steps div.on{color:var(--ink);border-color:var(--brand);font-weight:600}
+.steps div.done{color:var(--ink2);border-color:#e8a7a2}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:1px solid var(--line2);border-radius:10px;padding:12px 14px;background:#fff;text-align:left;width:100%}
+.opt:hover{border-color:var(--ink2)}
+.opt.on{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand-soft);background:#fffafa}
+.opt b{display:block}.opt small{color:var(--ink2)}
+.callout{border:1px solid #b7d3f6;background:var(--accent-soft);border-radius:10px;padding:12px 14px;font-size:13px}
+.callout.warn{border-color:#f3d27a;background:#fff8e6}
+.callout.crit{border-color:#f0b2b2;background:#fdf3f3}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;font-size:13.5px}
+.kv dt{color:var(--ink2)}.kv dd{margin:0;font-weight:500}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:#fff}
+.chk input{margin-top:3px}
+.chk b{display:block;font-size:13.5px}.chk small{color:var(--ink2);font-size:12px}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:#1b1b1a;color:#fff;padding:10px 16px;border-radius:9px;font-size:13.5px;opacity:0;transition:.2s;z-index:120}
+#toast.on{opacity:1;transform:translateX(-50%)}
+
+/* Response review */
+.ans{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.ans.flagged{border-color:#f0b2b2;background:#fffafa}
+.ans.accepted{border-color:#b9e0b9}
+.ans .qq{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.ans .qt{font-weight:600;margin-bottom:8px}
+.ans .aa{background:#f8f8f6;border-radius:8px;padding:8px 10px;margin-bottom:10px}
+.ans .ab{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.doc{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;border:1px solid var(--line2);border-radius:6px;padding:3px 8px;background:#fff}
+.thread{margin-top:10px;border-top:1px dashed var(--line2);padding-top:10px}
+.msg{display:flex;gap:8px;margin-bottom:8px;font-size:13px}
+.msg .who{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+.msg.you .who{background:#e3efe0;color:#2f6b25}
+.msg.sup .who{background:#e8f1fc;color:#1c5cab}
+.msg .tx{background:#f6f6f3;border-radius:8px;padding:6px 10px}
+.msg small{display:block;color:var(--muted);font-size:11px}
+.compose{display:flex;gap:8px}
+.sticky{position:sticky;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(4px);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-top:16px;box-shadow:0 -4px 16px rgba(0,0,0,.04)}
+.side2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+
+/* Board */
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.col{background:#efefeb;border-radius:10px;padding:10px}
+.col h4{font-size:13px;padding:2px 4px 10px;display:flex;justify-content:space-between;color:var(--ink2)}
+.tcard{background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:8px}
+.tcard b{display:block;font-size:13.5px;margin-bottom:4px}
+.tcard .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink2)}
+
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 14px 20px;font-size:13px}
+.timeline li:before{content:"";position:absolute;left:4px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--axis)}
+.timeline li:after{content:"";position:absolute;left:7.5px;top:16px;bottom:0;width:1px;background:var(--grid)}
+.timeline li:last-child:after{display:none}
+.timeline small{display:block;color:var(--muted);font-size:12px}
+.empty{color:var(--muted);text-align:center;padding:28px 10px;font-size:13px}
+.prof{display:flex;gap:16px;align-items:center}
+.prof .big{width:52px;height:52px;border-radius:12px;background:var(--brand-soft);color:var(--brand-ink);display:grid;place-items:center;font-weight:700;font-size:18px}
+.lens{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.lens .card{padding:14px 16px}
+.lens b{font-size:20px;font-weight:650}
+.lens small{display:block;color:var(--ink2);font-size:12px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--muted)}
+.codeinfo{cursor:help;border-bottom:1px dotted var(--muted)}
+@media (max-width:1100px){.grid2,.grid3,.needs,.lens,.board{grid-template-columns:1fr 1fr}.side2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <div class="main">
+    <header class="top">
+      <label class="search"><svg viewBox="0 0 24 24"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16M21 21l-4.3-4.3"/></svg><input id="gsearch" placeholder="Search suppliers, assessments, questions" autocomplete="off"></label>
+      <span class="sample" title="This prototype uses sample data">Prototype · sample data</span>
+      <span class="sp"></span>
+      <select class="inp" id="year" aria-label="Programme year"><option>2026</option><option>2025</option></select>
+      <button class="iconbtn" data-act="notif" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot" id="bellcount"></span></button>
+      <div class="me" data-act="memenu"><span class="av">PS</span><span><b>Prajal Sakhala</b><small>Client admin</small></span>
+        <div class="menu" id="memenu"><a href="#/settings/users">My profile</a><a href="#/settings">Settings</a><button data-act="signout">Sign out</button></div>
+      </div>
+    </header>
+    <main id="main"></main>
+  </div>
+</div>
+<div class="scrim" id="scrim" data-act="closeDrawer"></div>
+<aside class="drawer" id="drawer" aria-modal="true" role="dialog"></aside>
+<div id="tip"></div>
+<div id="toast"></div>
+
+<script>
+/* ============ DATA (sample) ============ */
+const TODAY = new Date('2026-11-24T09:00:00');
+const AREAS = ['Carbon & Energy','Scope 3','Water','Waste & Circularity','Responsible Sourcing','Labour, Health & Safety','Ethics & Compliance'];
+const AREA_SHORT = ['Carbon','Scope 3','Water','Waste','Sourcing','Labour','Ethics'];
+const MAT = [
+  {name:'Nascent',min:0,c:'#86b6ef',def:'Little or no formal ESG approach'},
+  {name:'Emerging',min:60,c:'#5598e7',def:'Awareness exists; practices ad hoc'},
+  {name:'Developing',min:70,c:'#2a78d6',def:'Formal processes, limited impact'},
+  {name:'Progressive',min:80,c:'#1c5cab',def:'Strong practices, measurable outcomes'},
+  {name:'Transformative',min:90,c:'#104281',def:'ESG embedded in the core business'}];
+const C1='#2a78d6', C2='#eb6834', GREY='#a9a8a2';
+
+let SUP = [
+ {id:'SUP-007',name:'Amaraja Batteries',tier:1,cat:'Primary cells & batteries',city:'Bhusawal',spend:180,contact:'R. Kulkarni',email:'esg@amaraja.example',fac:'Pune Plant 1',score:null,areas:null,prev:null,conf:null,comp:null,added:'2026-11-04'},
+ {id:'SUP-008',name:'Kavya Castings',tier:1,cat:'Metal castings',city:'Kolhapur',spend:240,contact:'S. Patil',email:'quality@kavya.example',fac:'Pune Plant 1',score:48,areas:[42,30,55,50,45,58,56],prev:41,conf:62,comp:75,added:'2025-08-12'},
+ {id:'SUP-009',name:'Sharda Polymers',tier:1,cat:'Medical-grade polymers',city:'Vapi',spend:320,contact:'A. Shah',email:'compliance@sharda.example',fac:'Vapi Unit',score:74,areas:[80,62,78,70,72,76,80],prev:66,conf:84,comp:100,added:'2025-08-12'},
+ {id:'SUP-010',name:'Vertex Circuits',tier:1,cat:'PCB assemblies',city:'Bengaluru',spend:150,contact:'K. Rao',email:'ehs@vertex.example',fac:'Pune Plant 2',score:56,areas:[50,38,60,52,64,58,70],prev:58,conf:58,comp:100,added:'2025-09-02'},
+ {id:'SUP-011',name:'Orbit Medi-Plastics',tier:1,cat:'Moulded components',city:'Daman',spend:95,contact:'N. Desai',email:'esg@orbitmp.example',fac:'Vapi Unit',score:83,areas:[86,70,84,82,80,88,90],prev:79,conf:88,comp:100,added:'2025-08-20'},
+ {id:'SUP-012',name:'Saanvi Chemicals',tier:1,cat:'Process chemicals',city:'Ankleshwar',spend:70,contact:'P. Mehta',email:'ehs@saanvi.example',fac:'Vapi Unit',score:38,areas:[30,20,35,40,42,45,54],prev:null,conf:46,comp:50,added:'2026-03-15'},
+ {id:'SUP-003',name:'Shubham',tier:2,cat:'PM Services',city:'Pune',spend:12,contact:'Shubham',email:'shubham@bharatcarbon.earth',fac:'Pune Plant 1',score:null,areas:null,prev:null,conf:45,comp:0,added:'2026-10-27'},
+ {id:'SUP-004',name:'Raj enterprises',tier:2,cat:'Wood',city:'Pune',spend:8,contact:'Raj',email:'raj@example.com',fac:'Pune Plant 1',score:null,areas:null,prev:null,conf:null,comp:null,added:'2026-11-02'},
+ {id:'SUP-005',name:'Alpha Technologies S',tier:2,cat:'Biological materials',city:'Ahmedabad',spend:6,contact:'Ashwasham',email:'alpha@example.com',fac:'Vapi Unit',score:null,areas:null,prev:null,conf:null,comp:null,added:'2026-11-03'},
+ {id:'SUP-013',name:'Nirmal Packaging',tier:2,cat:'Corrugated packaging',city:'Chakan',spend:22,contact:'V. Joshi',email:'admin@nirmal.example',fac:'Pune Plant 2',score:66,areas:[62,null,70,74,60,64,68],prev:61,conf:72,comp:100,added:'2025-10-01'},
+ {id:'SUP-014',name:'Greenline Logistics',tier:2,cat:'Inbound logistics',city:'Pune',spend:35,contact:'M. Iyer',email:'ops@greenline.example',fac:'Pune Plant 1',score:61,areas:[52,null,64,58,66,60,66],prev:63,conf:66,comp:100,added:'2025-10-01'},
+ {id:'SUP-015',name:'Deccan Forge Works',tier:2,cat:'Forged parts',city:'Satara',spend:28,contact:'G. More',email:'plant@deccanforge.example',fac:'Pune Plant 2',score:44,areas:[40,null,46,42,48,30,58],prev:39,conf:55,comp:67,added:'2025-10-01'},
+];
+const PREV_MAT = {1:[2,1,1,0,0],2:[2,1,0,0,0]}; // 2025 maturity counts by tier
+
+let ASSESS = [
+ {id:'A1',title:'Supplier Onboarding — Tier 1',type:'Onboarding',tier:1,period:'2026',due:'2026-12-15',status:'Active',q:10,started:'2026-11-04'},
+ {id:'A2',title:'Supplier Onboarding — Tier 2',type:'Onboarding',tier:2,period:'2026',due:'2026-11-10',status:'Active',q:5,started:'2026-10-27'},
+ {id:'A3',title:'Annual ESG Assessment — Tier 1',type:'Annual ESG',tier:1,period:'2026',due:'2026-12-15',status:'Active',q:50,started:'2026-11-02'},
+ {id:'A4',title:'Annual ESG Assessment — Tier 2',type:'Annual ESG',tier:2,period:'2026',due:'2026-11-30',status:'Active',q:25,started:'2026-10-15'},
+ {id:'A5',title:'Materiality Assessment',type:'Materiality',tier:0,period:'2026',due:'2026-12-20',status:'Active',q:12,started:'2026-11-10'},
+ {id:'A6',title:'Follow-up review — Labour practices',type:'Follow-up',tier:0,period:'Q1 2027',due:null,status:'Draft',q:8,started:null},
+ {id:'A7',title:'Annual ESG Assessment — Tier 1',type:'Annual ESG',tier:1,period:'2025',due:'2025-12-15',status:'Closed',q:46,started:'2025-10-20'},
+];
+let ASSIGN = [
+ ['A1','SUP-007','not_invited',null,0],['A1','SUP-008','reviewed','2026-12-15',10],['A1','SUP-009','reviewed','2026-12-15',10],['A1','SUP-010','reviewed','2026-12-15',10],['A1','SUP-011','reviewed','2026-12-15',10],['A1','SUP-012','reviewed','2026-12-15',10],
+ ['A2','SUP-003','reopened','2026-11-10',5],['A2','SUP-004','not_invited',null,0],['A2','SUP-005','not_invited',null,0],['A2','SUP-013','reviewed','2026-11-10',5],['A2','SUP-014','reviewed','2026-11-10',5],['A2','SUP-015','reviewed','2026-11-10',5],
+ ['A3','SUP-008','reviewed','2026-12-15',50],['A3','SUP-009','reviewed','2026-12-15',50],['A3','SUP-010','submitted','2026-12-15',50],['A3','SUP-011','reviewed','2026-12-15',50],['A3','SUP-012','submitted','2026-12-15',47],
+ ['A4','SUP-013','reviewed','2026-11-30',25],['A4','SUP-014','submitted','2026-11-30',25],['A4','SUP-015','reviewed','2026-11-30',25],['A4','SUP-003','invited','2026-11-30',0],
+ ['A7','SUP-008','reviewed','2025-12-15',46],['A7','SUP-009','reviewed','2025-12-15',46],['A7','SUP-010','reviewed','2025-12-15',46],['A7','SUP-011','reviewed','2025-12-15',46],
+].map(([aid,sid,st,due,answered])=>({aid,sid,st,due,answered}));
+
+let FLAGS = [
+ {id:'F1',sid:'SUP-003',aid:'A2',code:'OB-05',cause:'Permit missing (CTO)',text:'CTO document missing — supplier says it holds a valid CTO',status:'Open'},
+ {id:'F2',sid:'SUP-003',aid:'A2',code:'OB-08',cause:'Penalties, past 3 years',text:'Penalised for an ESG-related violation in the past 3 years',status:'Open'},
+ {id:'F3',sid:'SUP-008',aid:'A3',code:'OB-08',cause:'Penalties, past 3 years',text:'Pollution Control Board notice, 2025',status:'Action raised'},
+ {id:'F4',sid:'SUP-012',aid:'A3',code:'OB-05',cause:'Permit missing (CTO)',text:'CTO expired Aug 2026; renewal applied',status:'Action raised'},
+ {id:'F5',sid:'SUP-012',aid:'A3',code:'S-03',cause:'Wages or working hours',text:'Overtime above legal limit in 2 of 12 months',status:'Open'},
+ {id:'F6',sid:'SUP-015',aid:'A4',code:'S-03',cause:'Wages or working hours',text:'Contract workers paid below state minimum wage',status:'Action raised'},
+];
+const FLAG_CAUSES = ['Permit missing (CTO)','Penalties, past 3 years','Wages or working hours','Child or forced labour','Fatality'];
+
+let EVIDENCE = [
+ {id:'E1',sid:'SUP-010',aid:'A3',code:'E-06',q:'Scope 1 and 2 GHG emissions',file:'GHG inventory FY2025-26.pdf',at:'2026-11-18',st:'Pending'},
+ {id:'E2',sid:'SUP-012',aid:'A3',code:'OB-05',q:'Valid Consent to Operate',file:'CTO renewal application.pdf',at:'2026-11-20',st:'Pending'},
+ {id:'E3',sid:'SUP-014',aid:'A4',code:'E-02',q:'Environmental management system',file:'ISO 14001 certificate.pdf',at:'2026-11-21',st:'Pending'},
+];
+let THREADS = {
+ 'A3|SUP-012|OB-05':[{who:'sup',name:'P. Mehta',text:'Our CTO renewal is in process with GPCB. Can we upload the application receipt instead of the certificate?',at:'2026-11-21'}],
+ 'A3|SUP-010|E-06':[{who:'you',name:'Prajal',text:'Please confirm whether the Scope 1 and 2 figures are verified by a third party.',at:'2026-11-19'}],
+ 'A4|SUP-014|E-07':[{who:'sup',name:'M. Iyer',text:'Is Scope 3 applicable to logistics vendors?',at:'2026-11-12'},{who:'you',name:'Prajal',text:'Not for Tier 2. The question is hidden for your tier now.',at:'2026-11-13'}],
+};
+let ACTIONS = [
+ {id:'IA-01',sid:'SUP-003',flag:'F1',title:'Upload a valid Consent to Operate',owner:'Shubham',due:'2026-12-10',st:'Open'},
+ {id:'IA-02',sid:'SUP-012',flag:'F4',title:'Renew Consent to Operate with GPCB',owner:'P. Mehta',due:'2026-12-31',st:'In progress'},
+ {id:'IA-03',sid:'SUP-008',flag:'F3',title:'Close the 2025 pollution notice and share proof',owner:'S. Patil',due:'2026-12-05',st:'Awaiting approval'},
+ {id:'IA-04',sid:'SUP-015',flag:'F6',title:'Wage register audit for contract workers',owner:'G. More',due:'2026-11-15',st:'Open'},
+ {id:'IA-05',sid:'SUP-009',flag:null,title:'Set a science-based emissions target',owner:'A. Shah',due:'2026-10-30',st:'Closed'},
+];
+const TOPICS = [
+ {n:1,t:'GHG emissions & energy',imp:4.6,fin:4.2,area:0},
+ {n:2,t:'Product carbon & Scope 3',imp:4.1,fin:3.8,area:1},
+ {n:3,t:'Water stewardship',imp:3.9,fin:3.0,area:2},
+ {n:4,t:'Waste & circularity',imp:3.6,fin:3.2,area:3},
+ {n:5,t:'Hazardous chemicals',imp:3.7,fin:4.1,area:3},
+ {n:6,t:'Responsible minerals (3TG)',imp:3.2,fin:3.6,area:4},
+ {n:7,t:'Labour rights & wages',imp:4.3,fin:3.7,area:5},
+ {n:8,t:'Health & safety',imp:4.4,fin:4.0,area:5},
+ {n:9,t:'Business ethics & anti-bribery',imp:3.8,fin:4.4,area:6},
+ {n:10,t:'Data privacy',imp:2.6,fin:3.4,area:6},
+ {n:11,t:'Biodiversity',imp:2.4,fin:1.9,area:2},
+ {n:12,t:'Community engagement',imp:2.8,fin:2.2,area:4},
+];
+const SURVEY = [{g:'Internal teams',done:9,of:12},{g:'Suppliers (Tier 1)',done:5,of:6},{g:'Suppliers (Tier 2)',done:2,of:6},{g:'Customers',done:2,of:5}];
+const QBANK = [
+ {code:'OB-01',sec:'General',area:null,t:'Name of the company',type:'Text',ev:false,rf:false,tiers:[1,2],tpl:'Onboarding'},
+ {code:'OB-02',sec:'General',area:null,t:'Full registered address (facility / plant)',type:'Text',ev:false,rf:false,tiers:[1,2],tpl:'Onboarding'},
+ {code:'OB-03',sec:'General',area:null,t:'Products or services supplied',type:'Text',ev:false,rf:false,tiers:[1,2],tpl:'Onboarding'},
+ {code:'OB-05',sec:'General',area:null,t:'Does your company hold a valid Consent to Operate (CTO) from the Pollution Control Board?',type:'Single select + upload',ev:true,rf:true,tiers:[1,2],tpl:'Onboarding'},
+ {code:'OB-07',sec:'General',area:null,t:'Which certifications does your company hold?',type:'Multi-select + upload',ev:true,rf:false,tiers:[1],tpl:'Onboarding'},
+ {code:'OB-08',sec:'General',area:6,t:'Has your company been penalised for any ESG-related regulatory violation in the past 3 years?',type:'Single select + upload',ev:false,rf:true,tiers:[1,2],tpl:'Onboarding'},
+ {code:'E-01',sec:'Environment',area:0,t:'Do you have a formal environment policy with quantitative targets?',type:'Single select + upload',ev:true,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'E-02',sec:'Environment',area:0,t:'Is your environmental management system certified (ISO 14001 / 50001)?',type:'Single select + upload',ev:true,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'E-04',sec:'Environment',area:0,t:'What share of your electricity comes from renewable sources?',type:'Single select + data',ev:false,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'E-06',sec:'Environment',area:0,t:'Do you measure and report Scope 1 and 2 GHG emissions?',type:'Single select + data + upload',ev:true,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'E-07',sec:'Environment',area:1,t:'How do you assess and manage Scope 3 value-chain emissions?',type:'Single select',ev:false,rf:false,tiers:[1],tpl:'Annual ESG'},
+ {code:'E-12',sec:'Environment',area:2,t:'Do you track water withdrawal by source?',type:'Single select + data',ev:false,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'E-16',sec:'Environment',area:3,t:'What share of your waste is diverted from landfill?',type:'Single select + data',ev:false,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'P-02',sec:'Sustainable procurement',area:4,t:'Do you cascade a supplier code of conduct to your own suppliers?',type:'Single select + upload',ev:true,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'S-03',sec:'Social',area:5,t:'Do you comply with minimum wage and working-hour laws for all workers, including contract workers?',type:'Single select + upload',ev:true,rf:true,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'S-14',sec:'Social',area:5,t:'Report your lost-time injury frequency rate and any fatalities',type:'Data',ev:false,rf:true,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'G-02',sec:'Governance',area:6,t:'Do you have an anti-bribery policy with annual training?',type:'Single select + upload',ev:true,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+ {code:'G-05',sec:'Governance',area:6,t:'Do workers and communities have a grievance mechanism?',type:'Single select',ev:false,rf:false,tiers:[1,2],tpl:'Annual ESG'},
+];
+let FACILITIES = [{n:'Pune Plant 1',city:'Pune',sup:5},{n:'Pune Plant 2',city:'Pune',sup:3},{n:'Vapi Unit',city:'Vapi',sup:4}];
+let SETTINGS = {onbDays:21,tier1Spend:50,remind:[7,3,1],escalate:7,highSpend:100};
+let REVIEWSTATE = {}; // key aid|sid|code -> accepted | flagged
+let NOTIFS = [
+ {t:'Greenline Logistics submitted Annual ESG Assessment — Tier 2',s:'Ready for review',at:'2026-11-22',to:'#/response/A4/SUP-014',unread:true},
+ {t:'Saanvi Chemicals asked a question on “Valid Consent to Operate”',s:'Awaiting your reply',at:'2026-11-21',to:'#/response/A3/SUP-012',unread:true},
+ {t:'Vertex Circuits uploaded GHG inventory FY2025-26.pdf',s:'Evidence to verify',at:'2026-11-18',to:'#/reviews/evidence',unread:true},
+ {t:'Wage register audit is overdue',s:'Deccan Forge Works · due 15 Nov',at:'2026-11-16',to:'#/actions',unread:false},
+ {t:'Shubham submitted Supplier Onboarding — Tier 2',s:'2 red flags raised',at:'2026-10-27',to:'#/response/A2/SUP-003',unread:false},
+];
+const state = {dashTier:'all', supFilter:{tier:'all',risk:'all',q:''}, sel:new Set(), rpArea:0};
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sup=id=>SUP.find(s=>s.id===id);
+const asm=id=>ASSESS.find(a=>a.id===id);
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fd=d=>{if(!d)return '—';const x=new Date(d+'T00:00:00');return `${x.getDate()} ${MON[x.getMonth()]} ${x.getFullYear()}`};
+const fds=d=>{if(!d)return '—';const x=new Date(d+'T00:00:00');return `${x.getDate()} ${MON[x.getMonth()]}`};
+const addDays=(n)=>{const x=new Date(TODAY);x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)};
+const isOverdue=d=>d && new Date(d+'T23:59:59')<TODAY;
+const inr=l=>l>=100?`₹${(l/100).toFixed(l%100?1:0)} Cr`:`₹${l} L`;
+const avg=a=>{const v=a.filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0)/v.length:null};
+const tip=t=>` data-tip="${esc(t)}"`;
+function maturity(sc){if(sc==null)return null;let m=MAT[0];MAT.forEach(x=>{if(sc>=x.min)m=x});return m}
+function openFlags(sid){return FLAGS.filter(f=>f.sid===sid&&f.status!=='Closed')}
+function riskOf(s){
+  if(openFlags(s.id).length) return 'High';
+  if(s.score==null) return null;
+  if(s.score<40) return 'High';
+  if((s.comp!=null&&s.comp<100)||s.score<60) return 'Medium';
+  return 'Low';
+}
+function riskHtml(r){return r?`<span class="risk ${r}"><i></i>${r}</span>`:`<span class="risk na"><i></i><span style="color:var(--muted)">Not assessed</span></span>`}
+function tierHtml(t){return t?`<span class="tier t${t}">Tier ${t}</span>`:''}
+function matHtml(sc){const m=maturity(sc);return m?`<span class="pill p-blue">${m.name}</span>`:'<span style="color:var(--muted)">—</span>'}
+const ST_LABEL={not_invited:'Not invited',invited:'Invited',in_progress:'In progress',submitted:'Awaiting review',reviewed:'Reviewed',reopened:'Reopened'};
+const ST_CLS={not_invited:'p-warn',invited:'p-grey',in_progress:'p-blue',submitted:'p-brand',reviewed:'p-good',reopened:'p-crit'};
+function stHtml(a){let s=`<span class="pill ${ST_CLS[a.st]}">${ST_LABEL[a.st]}</span>`; if(a.st!=='reviewed'&&a.st!=='submitted'&&isOverdue(a.due)) s+=` <span class="pill p-crit">Overdue</span>`; return s}
+function code(c){return `<span class="mono codeinfo" title="Question ID ${esc(c)}">${esc(c)}</span>`}
+function initials(n){return n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),2600)}
+function stages(list){
+  const inv=list.filter(a=>a.st!=='not_invited'), sta=inv.filter(a=>a.st!=='invited'), sub=sta.filter(a=>['submitted','reviewed','reopened'].includes(a.st)), rev=sub.filter(a=>a.st==='reviewed');
+  const split=l=>({t1:l.filter(a=>sup(a.sid).tier===1).length,t2:l.filter(a=>sup(a.sid).tier===2).length});
+  return [{name:'Added',...split(list)},{name:'Invited',...split(inv)},{name:'Started',...split(sta)},{name:'Submitted',...split(sub)},{name:'Reviewed',...split(rev)}];
+}
+function activeAssign(){const act=ASSESS.filter(a=>a.status==='Active'&&a.type!=='Materiality').map(a=>a.id);return ASSIGN.filter(x=>act.includes(x.aid))}
+function needs(){
+  const act=activeAssign();
+  return {
+    review: act.filter(a=>a.st==='submitted').length,
+    overdue: new Set(act.filter(a=>!['submitted','reviewed'].includes(a.st)&&isOverdue(a.due)).map(a=>a.sid)).size,
+    notInvited: act.filter(a=>a.st==='not_invited').length,
+    flags: FLAGS.filter(f=>f.status==='Open').length,
+    flagsAll: FLAGS.filter(f=>f.status!=='Closed').length,
+    evidence: EVIDENCE.filter(e=>e.st==='Pending').length,
+    clar: Object.values(THREADS).filter(t=>t.at(-1).who==='sup').length,
+  };
+}
+function tierFilter(list){return state.dashTier==='all'?list:list.filter(s=>(s.tier||sup(s.sid).tier)===+state.dashTier)}
+
+/* ============ CHARTS (inline SVG) ============ */
+function funnelSvg(st,single){
+  const W=560,rowH=36,lab=86,maxW=330,H=st.length*rowH+4;
+  const max=Math.max(1,...st.map(s=>s.t1+s.t2));let g='';
+  st.forEach((s,i)=>{
+    const y=i*rowH, tot=s.t1+s.t2, w1=s.t1/max*maxW, w2=s.t2/max*maxW;
+    g+=`<text x="0" y="${y+20}" class="lab">${s.name}</text>`;
+    if(tot===0) g+=`<rect x="${lab}" y="${y+7}" width="2" height="20" fill="${GREY}"/>`;
+    if(w1>0) g+=`<rect x="${lab}" y="${y+7}" width="${Math.max(w1,3)}" height="20" rx="4" fill="${single?C1:C1}"${tip(`${s.name}\nTier 1: ${s.t1}`)}/>`;
+    if(w2>0) g+=`<rect x="${lab+w1+(w1>0?2:0)}" y="${y+7}" width="${Math.max(w2-(w1>0?2:0),3)}" height="20" rx="4" fill="${single?C1:C2}"${tip(`${s.name}\nTier 2: ${s.t2}`)}/>`;
+    g+=`<text x="${lab+w1+w2+8}" y="${y+21}" class="val">${tot}</text>`;
+    if(i>0){const p=st[i-1].t1+st[i-1].t2;const pct=p?Math.round(tot/p*100):0;const drop=p-tot;
+      g+=`<text x="${W}" y="${y+21}" text-anchor="end" class="${drop>0&&pct<80?'val':'sub'}" ${drop>0&&pct<80?'style="fill:#a52222"':''}>${drop>0?`−${drop} · `:''}${pct}% carry on</text>`}
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Assessment progress funnel">${g}</svg>`;
+}
+function riskSvg(list){
+  const W=560,H=330,l=58,r=14,t=10,b=44,pw=W-l-r,ph=H-t-b;
+  const maxS=Math.max(400,Math.ceil(Math.max(...list.map(s=>s.spend))/100)*100);
+  const X=v=>l+v/100*pw, Y=v=>t+ph-v/maxS*ph, thS=SETTINGS.highSpend, thP=60;
+  let g=`<rect x="${l}" y="${t}" width="${X(thP)-l}" height="${Y(thS)-t}" fill="${C1}" fill-opacity=".08"/>`;
+  for(let v=0;v<=100;v+=20) g+=`<line x1="${X(v)}" y1="${t}" x2="${X(v)}" y2="${t+ph}" class="grid"/><text x="${X(v)}" y="${t+ph+16}" text-anchor="middle" class="ax">${v}</text>`;
+  for(let v=0;v<=maxS;v+=100) g+=`<line x1="${l}" y1="${Y(v)}" x2="${l+pw}" y2="${Y(v)}" class="grid"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" class="ax">${v?inr(v):'0'}</text>`;
+  g+=`<line x1="${X(thP)}" y1="${t}" x2="${X(thP)}" y2="${t+ph}" stroke="var(--axis)" stroke-dasharray="4 3"/><line x1="${l}" y1="${Y(thS)}" x2="${l+pw}" y2="${Y(thS)}" stroke="var(--axis)" stroke-dasharray="4 3"/>`;
+  g+=`<text x="${l+8}" y="${t+18}" class="lab" style="font-weight:650;fill:#1c5cab">Engage first</text><text x="${l+8}" y="${t+33}" class="sub">high spend, score below ${thP}</text>`;
+  g+=`<text x="${l+pw-8}" y="${t+18}" text-anchor="end" class="sub">Strategic and strong</text><text x="${l+8}" y="${t+ph-8}" class="sub">Develop</text><text x="${l+pw-8}" y="${t+ph-8}" text-anchor="end" class="sub">Low risk</text>`;
+  g+=`<text x="${l+pw/2}" y="${H-4}" text-anchor="middle" class="ax">ESG performance score (0–100) →</text><text transform="translate(12 ${t+ph/2}) rotate(-90)" text-anchor="middle" class="ax">Annual spend →</text>`;
+  list.forEach(s=>{const eng=s.spend>=thS&&s.score<thP;const cx=X(s.score),cy=Y(s.spend);
+    g+=`<a href="#/suppliers/${s.id}"><circle cx="${cx}" cy="${cy}" r="7" fill="${eng?C1:GREY}" stroke="#fff" stroke-width="2"${tip(`${s.name} · Tier ${s.tier}\nScore ${s.score} · Spend ${inr(s.spend)}\nData confidence ${s.conf}%`)}/></a>`;
+    if(eng) g+=`<text x="${cx+11}" y="${cy+4}" class="lab" style="font-weight:600">${esc(s.name)}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Risk matrix">${g}</svg>`;
+}
+const HEAT=[{max:39,c:'#e34948',ink:'#fff',l:'Below 40'},{max:59,c:'#f4b4b1',ink:'#141413',l:'40–59'},{max:69,c:'#ecebe6',ink:'#141413',l:'60–69'},{max:79,c:'#9ec5f4',ink:'#141413',l:'70–79'},{max:100,c:'#2a78d6',ink:'#fff',l:'80+'}];
+const heatC=v=>HEAT.find(h=>v<=h.max);
+function heatLegend(){return `<div class="legend">${HEAT.map(h=>`<span><i style="background:${h.c}"></i>${h.l}</span>`).join('')}<span><i style="background:#f6f6f3;border:1px dashed var(--axis)"></i>Not scored</span></div>`}
+function heatSvg(list){
+  const lab=150,cw=56,ch=28,gap=2,top=26,W=lab+7*(cw+gap),H=top+list.length*(ch+gap);
+  let g=AREA_SHORT.map((a,i)=>`<text x="${lab+i*(cw+gap)+cw/2}" y="14" text-anchor="middle" class="ax">${a}</text>`).join('');
+  list.forEach((s,r)=>{const y=top+r*(ch+gap);
+    g+=`<a href="#/suppliers/${s.id}"><text x="0" y="${y+18}" class="lab">${esc(s.name.length>20?s.name.slice(0,19)+'…':s.name)}</text></a>`;
+    s.areas.forEach((v,c)=>{const x=lab+c*(cw+gap);
+      if(v==null) g+=`<rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="4" fill="#f6f6f3" stroke="var(--axis)" stroke-dasharray="3 2"${tip(`${s.name} · ${AREAS[c]}\nNot scored (Scope 3 is Tier 1 only)`)}/>`;
+      else {const h=heatC(v);g+=`<rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="4" fill="${h.c}"${tip(`${s.name} · ${AREAS[c]}\nScore ${v}/100`)}/><text x="${x+cw/2}" y="${y+18}" text-anchor="middle" style="fill:${h.ink};font-size:11.5px;font-weight:600;pointer-events:none">${v}</text>`}});
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Supplier by area heatmap">${g}</svg>`;
+}
+function matCounts(list){const c=[0,0,0,0,0];list.forEach(s=>{if(s.score!=null)c[MAT.indexOf(maturity(s.score))]++});return c}
+function maturitySvg(rows){
+  const W=560,lab=70,bw=W-lab-10;let g='',y=0;
+  rows.forEach(r=>{const tot=r.c.reduce((a,b)=>a+b,0)||1,ptot=r.p.reduce((a,b)=>a+b,0)||1;let x=lab;
+    g+=`<text x="0" y="${y+17}" class="lab">${r.label}</text>`;
+    r.c.forEach((n,i)=>{if(!n)return;const w=n/tot*bw;g+=`<rect x="${x}" y="${y+2}" width="${Math.max(w-2,2)}" height="22" rx="4" fill="${MAT[i].c}"${tip(`${r.label} · ${MAT[i].name}\n${n} supplier${n>1?'s':''} (${Math.round(n/tot*100)}%)`)}/>`;
+      if(w>26) g+=`<text x="${x+w/2-1}" y="${y+17}" text-anchor="middle" style="fill:${i>=2?'#fff':'#141413'};font-size:11.5px;font-weight:600;pointer-events:none">${n}</text>`;x+=w});
+    x=lab;g+=`<text x="0" y="${y+38}" class="sub">2025</text>`;
+    r.p.forEach((n,i)=>{if(!n)return;const w=n/ptot*bw;g+=`<rect x="${x}" y="${y+31}" width="${Math.max(w-2,2)}" height="8" rx="3" fill="${MAT[i].c}" fill-opacity=".55"${tip(`${r.label} · 2025 · ${MAT[i].name}: ${n}`)}/>`;x+=w});
+    y+=60});
+  return `<svg viewBox="0 0 ${W} ${y-8}" class="chart" role="img" aria-label="Maturity by tier">${g}</svg>`;
+}
+function matLegend(){return `<div class="legend">${MAT.map(m=>`<span><i style="background:${m.c}"></i>${m.name}</span>`).join('')}</div>`}
+function areaAverages(list){return AREAS.map((_,i)=>avg(list.map(s=>s.areas?s.areas[i]:null)))}
+const AREA_DELTA=[6,4,2,3,-1,5,1];
+function slopeSvg(list){
+  const now=areaAverages(list).map(v=>v==null?null:Math.round(v));const prev=now.map((v,i)=>v==null?null:v-AREA_DELTA[i]);
+  const W=560,H=280,xl=120,xr=330,t=30,b=16;const vals=[...now,...prev].filter(v=>v!=null);const mn=Math.floor(Math.min(...vals)/10)*10,mx=Math.ceil(Math.max(...vals)/10)*10;
+  const Y=v=>t+(mx-v)/(mx-mn||1)*(H-t-b);
+  let best=-1,bd=-99;now.forEach((v,i)=>{if(v!=null&&AREA_DELTA[i]>bd){bd=AREA_DELTA[i];best=i}});
+  let g=`<text x="${xl}" y="14" text-anchor="middle" class="ax">2025</text><text x="${xr}" y="14" text-anchor="middle" class="ax">2026</text><line x1="${xl}" y1="${t-6}" x2="${xl}" y2="${H-b}" class="base"/><line x1="${xr}" y1="${t-6}" x2="${xr}" y2="${H-b}" class="base"/>`;
+  const labs=[];
+  now.forEach((v,i)=>{if(v==null)return;const acc=i===best;const p=prev[i];
+    g+=`<line x1="${xl}" y1="${Y(p)}" x2="${xr}" y2="${Y(v)}" stroke="${acc?C1:GREY}" stroke-width="${acc?2.5:1.6}"${tip(`${AREAS[i]}\n2025: ${p} → 2026: ${v} (${AREA_DELTA[i]>=0?'+':''}${AREA_DELTA[i]})`)}/>`;
+    g+=`<circle cx="${xl}" cy="${Y(p)}" r="4" fill="${acc?C1:GREY}" stroke="#fff" stroke-width="2"/><circle cx="${xr}" cy="${Y(v)}" r="4.5" fill="${acc?C1:GREY}" stroke="#fff" stroke-width="2"/>`;
+    labs.push({y:Y(v),i,v,acc});});
+  labs.sort((a,b)=>a.y-b.y);for(let k=1;k<labs.length;k++) if(labs[k].y-labs[k-1].y<15) labs[k].y=labs[k-1].y+15;
+  labs.forEach(L=>g+=`<text x="${xr+12}" y="${L.y+4}" class="${L.acc?'val':'lab'}">${L.v} · ${AREAS[L.i]}${L.acc?`  (+${AREA_DELTA[L.i]})`:''}</text>`);
+  g+=`<text x="${xl-10}" y="${Y(mx)+4}" text-anchor="end" class="ax">${mx}</text><text x="${xl-10}" y="${Y(mn)+4}" text-anchor="end" class="ax">${mn}</text>`;
+  return {svg:`<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Area scores year on year">${g}</svg>`,best,bd};
+}
+function hbarSvg(rows,opts={}){
+  const W=opts.W||560,lab=opts.lab||190,rowH=30,maxW=W-lab-50,max=opts.max||Math.max(1,...rows.map(r=>r.v));let g='';
+  rows.forEach((r,i)=>{const y=i*rowH,w=r.v/max*maxW;
+    g+=`<text x="0" y="${y+19}" class="lab">${esc(r.l)}</text>`;
+    g+=w>0?`<rect x="${lab}" y="${y+7}" width="${Math.max(w,3)}" height="16" rx="4" fill="${r.c||GREY}"${tip(r.tip||`${r.l}: ${r.v}`)}/>`:`<rect x="${lab}" y="${y+7}" width="2" height="16" fill="var(--axis)"/>`;
+    if(r.mark!=null) g+=`<line x1="${lab+r.mark/max*maxW}" y1="${y+3}" x2="${lab+r.mark/max*maxW}" y2="${y+27}" stroke="var(--ink)" stroke-width="2"${tip(`${opts.markLabel||'Average'}: ${Math.round(r.mark)}`)}/>`;
+    g+=`<text x="${lab+Math.max(w,3)+8}" y="${y+20}" class="val">${r.vl!=null?r.vl:r.v}</text>`;});
+  (opts.refs||[]).forEach(rf=>{const x=lab+rf.v/max*maxW;g=`<line x1="${x}" y1="0" x2="${x}" y2="${rows.length*rowH}" stroke="var(--axis)" stroke-dasharray="4 3"/>`+g+`<text x="${x+4}" y="${rows.length*rowH+14}" class="ax">${rf.l}</text>`});
+  return `<svg viewBox="0 0 ${W} ${rows.length*rowH+(opts.refs?20:2)}" class="chart" role="img">${g}</svg>`;
+}
+function matrixSvg(big){
+  const W=560,H=big?440:300,l=44,r=16,t=12,b=40,pw=W-l-r,ph=H-t-b;const X=v=>l+(v-1)/4*pw,Y=v=>t+ph-(v-1)/4*ph,th=3.5;
+  let g=`<rect x="${X(th)}" y="${t}" width="${l+pw-X(th)}" height="${Y(th)-t}" fill="${C1}" fill-opacity=".08"/>`;
+  for(let v=1;v<=5;v++) g+=`<line x1="${X(v)}" y1="${t}" x2="${X(v)}" y2="${t+ph}" class="grid"/><line x1="${l}" y1="${Y(v)}" x2="${l+pw}" y2="${Y(v)}" class="grid"/><text x="${X(v)}" y="${t+ph+16}" text-anchor="middle" class="ax">${v}</text><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" class="ax">${v}</text>`;
+  g+=`<line x1="${X(th)}" y1="${t}" x2="${X(th)}" y2="${t+ph}" stroke="var(--axis)" stroke-dasharray="4 3"/><line x1="${l}" y1="${Y(th)}" x2="${l+pw}" y2="${Y(th)}" stroke="var(--axis)" stroke-dasharray="4 3"/>`;
+  g+=`<text x="${l+pw-8}" y="${t+16}" text-anchor="end" class="lab" style="font-weight:650;fill:#1c5cab">Double material</text><text x="${l+8}" y="${t+16}" class="sub">Impact material</text><text x="${l+pw-8}" y="${t+ph-8}" text-anchor="end" class="sub">Financially material</text><text x="${l+8}" y="${t+ph-8}" class="sub">Monitor</text>`;
+  g+=`<text x="${l+pw/2}" y="${H-4}" text-anchor="middle" class="ax">Financial materiality (1–5) →</text><text transform="translate(12 ${t+ph/2}) rotate(-90)" text-anchor="middle" class="ax">Impact materiality (1–5) →</text>`;
+  TOPICS.forEach(tp=>{const m=tp.imp>=th||tp.fin>=th;const rr=big?11:8;
+    g+=`<circle cx="${X(tp.fin)}" cy="${Y(tp.imp)}" r="${rr}" fill="${m?C1:GREY}" stroke="#fff" stroke-width="2"${tip(`${tp.n}. ${tp.t}\nImpact ${tp.imp} · Financial ${tp.fin}\n${m?'Material':'Not material'}`)}/><text x="${X(tp.fin)}" y="${Y(tp.imp)+4}" text-anchor="middle" style="fill:#fff;font-size:${big?11:9.5}px;font-weight:700;pointer-events:none">${tp.n}</text>`});
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Materiality matrix">${g}</svg>`;
+}
+
+/* ============ SIDEBAR ============ */
+const IC={
+ dashboard:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+ suppliers:'M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 19v-1a4 4 0 0 0-3-3.9M15.5 3.1a3.5 3.5 0 0 1 0 6.8',
+ assessments:'M9 3h6v3H9zM7 4.5H5V21h14V4.5h-2M8 11h8M8 15h8M8 19h5',
+ reviews:'M3 13l3-8h12l3 8v6H3zM3 13h5l1.5 3h5L16 13h5',
+ actions:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M8 12l3 3 5-6',
+ risk:'M4 4v16h16M8 15.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M11.5 10.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M15 14a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M18 7.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1',
+ materiality:'M4 4h16v16H4zM12 4v16M4 12h16M16 8h.01M8 16h.01',
+ quality:'M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4',
+ reports:'M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6',
+ questionnaires:'M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01',
+ settings:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'};
+const NAV=[
+ {g:'OVERVIEW',items:[['dashboard','Dashboard']]},
+ {g:'SUPPLIER PROGRAMME',items:[['suppliers','Suppliers'],['assessments','Assessments'],['reviews','Reviews','count'],['actions','Improvement actions']]},
+ {g:'INSIGHTS',items:[['risk','Risk & performance'],['materiality','Materiality','new'],['quality','Data quality'],['reports','Reports & exports','new']]},
+ {g:'SETUP',items:[['questionnaires','Questionnaires'],['settings','Settings']]}];
+function renderSide(cur){
+  const n=needs();const rc=n.review+n.evidence+n.clar+n.flags;
+  $('#side').innerHTML=`<div class="org"><span class="av">DP</span><span><b>DCT, Pune</b><small>Supplier ESG programme</small></span></div>`+
+   NAV.map(s=>`<div class="grp">${s.g}</div><nav class="nav">${s.items.map(([k,l,x])=>`<a href="#/${k}" class="${cur===k?'on':''}"><svg viewBox="0 0 24 24"><path d="${IC[k]}"/></svg>${l}${x==='count'&&rc?`<span class="cnt">${rc}</span>`:''}${x==='new'?'<span class="new">New</span>':''}</a>`).join('')}</nav>`).join('')+
+   `<div class="foot">Powered by Bharat Carbon · Help &amp; methodology</div>`;
+  const b=NOTIFS.filter(x=>x.unread).length;$('#bellcount').textContent=b||'';$('#bellcount').style.display=b?'':'none';
+}
+
+/* ============ PAGES ============ */
+const P={};
+function head(title,sub,acts='',crumb=''){return `${crumb?`<div class="crumb">${crumb}</div>`:''}<div class="ph"><div><h1>${title}</h1>${sub?`<p>${sub}</p>`:''}</div><div class="acts">${acts}</div></div>`}
+function tabs(base,list,cur){return `<div class="tabs">${list.map(([k,l,n])=>`<a href="#/${base}/${k}" class="${cur===k?'on':''}">${l}${n!=null?`<span class="n">${n}</span>`:''}</a>`).join('')}</div>`}
+
+/* ---- Dashboard ---- */
+P.dashboard=()=>{
+  const n=needs();
+  const scored=tierFilter(SUP.filter(s=>s.score!=null));
+  const assign=tierFilter(activeAssign());
+  const st=stages(assign);
+  const worstStage=st.slice(1).reduce((w,s,i)=>{const p=st[i].t1+st[i].t2,d=p-(s.t1+s.t2);return d>w.d?{d,name:s.name}:w},{d:-1,name:''});
+  const eng=scored.filter(s=>s.spend>=SETTINGS.highSpend&&s.score<60);
+  const aa=areaAverages(scored);let wi=0;aa.forEach((v,i)=>{if(v!=null&&v<aa[wi])wi=i});
+  const tiers=state.dashTier==='all'?[1,2]:[+state.dashTier];
+  const matRows=tiers.map(t=>({label:`Tier ${t}`,c:matCounts(SUP.filter(s=>s.tier===t)),p:PREV_MAT[t]}));
+  const t1c=matCounts(SUP.filter(s=>s.tier===1));const devp=Math.round((t1c[2]+t1c[3]+t1c[4])/t1c.reduce((a,b)=>a+b,0)*100);
+  const sl=slopeSvg(scored);
+  const fl=tierFilter(FLAGS.filter(f=>f.status!=='Closed'));
+  const fRows=FLAG_CAUSES.map(c=>({l:c,v:fl.filter(f=>f.cause===c).length}));
+  const top=fRows.reduce((a,b)=>b.v>a.v?b:a);fRows.forEach(r=>{if(r===top&&r.v)r.c=C1});
+  const mtop=TOPICS.filter(t=>t.imp>=3.5&&t.fin>=3.5).length;
+  const NeedC=(num,t,s,to)=>`<a class="need ${num?'':'zero'}" href="${to}"><span class="num">${num}</span><span><b>${t}</b><small>${s}</small></span></a>`;
+  return head('Dashboard','Supplier ESG programme · 2026 · red flags count across all assessments')+
+  `<div class="needs">
+    ${NeedC(n.review,'Responses to review','Opens Reviews','#/reviews/responses')}
+    ${NeedC(n.overdue+n.notInvited,'Overdue or not invited',`${n.overdue} overdue · ${n.notInvited} never invited`,'#/assessments')}
+    ${NeedC(n.flags,'Open red flags',`${n.flagsAll} incl. those with actions`,'#/reviews/flags')}
+    ${NeedC(n.evidence+n.clar,'Evidence & questions',`${n.evidence} documents · ${n.clar} supplier question${n.clar===1?'':'s'}`,'#/reviews/evidence')}
+  </div>
+  <div class="filters"><span style="color:var(--ink2);font-size:13px">Show</span>
+    <div class="seg">${[['all','All tiers'],['1','Tier 1'],['2','Tier 2']].map(([k,l])=>`<button data-act="dashTier" data-arg="${k}" class="${state.dashTier===k?'on':''}">${l}</button>`).join('')}</div>
+    <select class="inp"><option>All facilities</option>${FACILITIES.map(f=>`<option>${f.n}</option>`).join('')}</select>
+    <span style="margin-left:auto;font-size:12px;color:var(--muted)">Hover any mark for detail · click a supplier to open it</span></div>
+  <div class="grid2">
+    <div class="card"><h3>${st[4].t1+st[4].t2} of ${st[0].t1+st[0].t2} supplier assessments reviewed; biggest drop at “${worstStage.name}”</h3><p class="q">Where are suppliers stuck before they submit? All active assessments.</p>
+      ${state.dashTier==='all'?`<div class="legend"><span><i style="background:${C1}"></i>Tier 1</span><span><i style="background:${C2}"></i>Tier 2</span></div>`:''}
+      ${funnelSvg(st,state.dashTier!=='all')}<div class="cf"><span>${n.notInvited} supplier assessments were added but never invited</span><a class="link" href="#/assessments">Open assessments →</a></div></div>
+    <div class="card"><h3>${eng.length} high-spend supplier${eng.length===1?'':'s'} score below 60</h3><p class="q">Which suppliers should procurement engage first? Spend × ESG performance score.</p>
+      ${riskSvg(scored)}<div class="cf"><span>High spend = ${inr(SETTINGS.highSpend)} or more (change in Settings)</span><a class="link" href="#/risk/matrix">Open risk matrix →</a></div></div>
+    <div class="card"><h3>${AREAS[wi]} is the weakest area, averaging ${Math.round(aa[wi])}</h3><p class="q">Which supplier is weak in which area? Sorted by spend.</p>
+      ${heatLegend()}${heatSvg([...scored].sort((a,b)=>b.spend-a.spend))}<div class="cf"><span>Same 7 areas as the scoring methodology</span><a class="link" href="#/risk/heatmap">Open heatmap →</a></div></div>
+    <div class="stack">
+      <div class="card"><h3>${devp}% of Tier 1 suppliers are Developing or better</h3><p class="q">How mature is each tier, and is it improving? Thin bar = 2025.</p>${matLegend()}${maturitySvg(matRows)}<div class="cf"><span>Suppliers without a scored annual assessment are left out</span><a class="link" href="#/questionnaires/scoring">How maturity is scored →</a></div></div>
+      <div class="card"><h3>${fl.length} red flags across ${new Set(fl.map(f=>f.sid)).size} suppliers; most common: ${top.l.charAt(0).toLowerCase()+top.l.slice(1)}</h3><p class="q">Which red-flag causes come up most? Open and with an action raised.</p>${hbarSvg(fRows)}<div class="cf"><span>Work the list in Reviews → Red flags</span><a class="link" href="#/reviews/flags">Open red flags →</a></div></div>
+    </div>
+    <div class="card"><h3>${AREAS[sl.best]} improved most, +${sl.bd} points</h3><p class="q">Is each area better than last year? Average area score, suppliers scored in both years.</p>${sl.svg}<div class="cf"><span>Year-on-year links assessments by type and tier, not by title</span><a class="link" href="#/risk/trends">Open trends →</a></div></div>
+    <div class="card"><h3>${mtop} topics are double material</h3><p class="q">Which ESG topics matter most to stakeholders and to the business? Materiality Assessment 2026, survey in progress.</p>${matrixSvg(false)}<div class="cf"><span>Material topics weigh more in Annual ESG scoring</span><a class="link" href="#/materiality">Open materiality →</a></div></div>
+  </div>`;
+};
+
+/* ---- Suppliers ---- */
+function supRows(){
+  const f=state.supFilter;return SUP.filter(s=>(f.tier==='all'||s.tier===+f.tier)&&(f.risk==='all'||(riskOf(s)||'none')===f.risk)&&(!f.q||(s.name+s.cat+s.city+s.id).toLowerCase().includes(f.q.toLowerCase())));
+}
+function onbOf(s){return ASSIGN.find(a=>a.sid===s.id&&asm(a.aid).type==='Onboarding')}
+function openItems(s){return openFlags(s.id).length+EVIDENCE.filter(e=>e.sid===s.id&&e.st==='Pending').length+ACTIONS.filter(a=>a.sid===s.id&&a.st!=='Closed').length}
+P.suppliers=(id,tab)=>{
+  if(id) return supProfile(id,tab||'overview');
+  const rows=supRows(),f=state.supFilter;const ni=SUP.filter(s=>{const o=onbOf(s);return o&&o.st==='not_invited'}).length;
+  return head('Suppliers',`${SUP.length} suppliers · ${SUP.filter(s=>s.tier===1).length} in Tier 1 · ${SUP.filter(s=>s.tier===2).length} in Tier 2`,
+   `<button class="btn" data-act="importMenu">Import ▾</button><div class="menu" id="importmenu" style="top:42px;right:120px"><button data-act="toastMsg" data-arg="CSV upload opens here">Upload a CSV or Excel file</button><button data-act="toastMsg" data-arg="Template downloaded">Download the template</button><button data-act="toastMsg" data-arg="Import from Bharat Carbon opens here">Import from Bharat Carbon</button></div><button class="btn pri" data-act="addSupplier">+ Add supplier</button>`)+
+  (ni?`<div class="callout warn" style="margin-bottom:14px;display:flex;align-items:center;gap:12px"><span><b>${ni} supplier${ni>1?'s were':' was'} added but never invited to onboarding.</b> They won't hear from you until you invite them.</span><button class="btn sm pri" style="margin-left:auto" data-act="inviteNotInvited">Invite ${ni} now</button></div>`:'')+
+  `<div class="filters"><input class="inp" style="width:260px" placeholder="Search name, category, city" value="${esc(f.q)}" data-input="supq">
+   <div class="seg">${[['all','All tiers'],['1','Tier 1'],['2','Tier 2']].map(([k,l])=>`<button data-act="supTier" data-arg="${k}" class="${f.tier===k?'on':''}">${l}</button>`).join('')}</div>
+   <div class="seg">${[['all','Any risk'],['High','High'],['Medium','Medium'],['Low','Low'],['none','Not assessed']].map(([k,l])=>`<button data-act="supRisk" data-arg="${k}" class="${f.risk===k?'on':''}">${l}</button>`).join('')}</div>
+   ${state.sel.size?`<span style="margin-left:auto;display:flex;gap:8px;align-items:center"><b>${state.sel.size} selected</b><button class="btn sm" data-act="bulkAdd">Add to assessment</button><button class="btn sm pri" data-act="bulkInvite">Invite to onboarding</button></span>`:''}</div>
+  <table class="tbl"><thead><tr><th style="width:30px"><input type="checkbox" data-act="selAll" ${state.sel.size&&state.sel.size===rows.length?'checked':''}></th><th>Supplier</th><th>Tier</th><th class="num">Annual spend</th><th>Onboarding</th><th class="num">ESG score</th><th>Maturity</th><th>Risk</th><th class="num">Open items</th></tr></thead><tbody>
+  ${rows.map(s=>{const o=onbOf(s);return `<tr><td><input type="checkbox" data-act="sel" data-arg="${s.id}" ${state.sel.has(s.id)?'checked':''}></td>
+   <td><a class="nm" href="#/suppliers/${s.id}">${esc(s.name)}</a><small>${esc(s.cat)} · ${esc(s.city)}</small></td><td>${tierHtml(s.tier)}</td><td class="num">${inr(s.spend)}</td>
+   <td>${o?stHtml(o):'—'}</td><td class="num">${s.score??'—'}</td><td>${matHtml(s.score)}</td><td>${riskHtml(riskOf(s))}</td><td class="num">${openItems(s)||'—'}</td></tr>`}).join('')||`<tr><td colspan="9" class="empty">No suppliers match these filters.</td></tr>`}
+  </tbody></table>`;
+};
+function supProfile(id,tab){
+  const s=sup(id);if(!s) return `<div class="empty">Supplier not found.</div>`;
+  const r=riskOf(s),as=ASSIGN.filter(a=>a.sid===id),fl=FLAGS.filter(f=>f.sid===id),ac=ACTIONS.filter(a=>a.sid===id);
+  const thr=Object.entries(THREADS).filter(([k])=>k.split('|')[1]===id);
+  const latest=as.filter(a=>['submitted','reviewed','reopened'].includes(a.st)).sort((a,b)=>(b.aid>a.aid?1:-1))[0];
+  let body='';
+  if(tab==='overview'){
+    const tierAvg=areaAverages(SUP.filter(x=>x.tier===s.tier&&x.score!=null));
+    body=`<div class="lens" style="margin-bottom:16px">
+      <div class="card"><small>Basic compliance</small><b>${s.comp!=null?s.comp+'%':'—'}</b><div class="bar" style="margin-top:8px"><span style="width:${s.comp||0}%;background:${(s.comp||0)<100?'var(--warn)':'var(--good)'}"></span></div><small style="margin-top:6px">Permits and red-flag checks passed</small></div>
+      <div class="card"><small>ESG performance</small><b>${s.score??'—'}<span style="font-size:13px;color:var(--muted)"> /100</span></b><div style="margin-top:6px">${matHtml(s.score)}</div></div>
+      <div class="card"><small>Year on year</small><b>${s.score!=null&&s.prev!=null?(s.score-s.prev>=0?'+':'')+(s.score-s.prev):'—'}</b><small>${s.prev!=null?`2025 score ${s.prev}`:'Baseline year'}</small></div>
+      <div class="card"><small>Data confidence</small><b>${s.conf!=null?s.conf+'%':'—'}</b><div class="bar" style="margin-top:8px"><span style="width:${s.conf||0}%;background:${C1}"></span></div><small style="margin-top:6px">${s.conf==null?'No evidence yet':s.conf<60?'Low · scores lean on unverified claims':s.conf<80?'Medium':'High'}</small></div></div>
+     <div class="grid2"><div class="card"><h3>${s.areas?`Strongest in ${AREAS[s.areas.indexOf(Math.max(...s.areas.filter(v=>v!=null)))]}, weakest in ${AREAS[s.areas.indexOf(Math.min(...s.areas.filter(v=>v!=null)))]}`:'No scored annual assessment yet'}</h3><p class="q">Score by area · black tick = Tier ${s.tier} average</p>
+       ${s.areas?hbarSvg(s.areas.map((v,i)=>({l:AREAS[i],v:v??0,vl:v??'n/a',c:v==null?GREY:C1,mark:v==null?null:tierAvg[i],tip:`${AREAS[i]}: ${v??'not scored'}`})),{max:100,lab:180,markLabel:`Tier ${s.tier} average`}):`<div class="empty">Scores appear after the first Annual ESG Assessment is submitted.</div>`}</div>
+      <div class="card"><h3>Red flags and compliance</h3><p class="q">A check passes only with accepted evidence</p>
+       ${fl.length?fl.map(f=>`<div class="chk"><span class="risk High"><i></i></span><span><b>${esc(f.text)}</b><small>${esc(f.cause)} · ${esc(asm(f.aid).title)} · ${f.status}</small></span></div>`).join(''):`<div class="empty">No red flags.</div>`}
+       <dl class="kv" style="margin-top:14px"><dt>Contact</dt><dd>${esc(s.contact)} · ${esc(s.email)}</dd><dt>Facility</dt><dd>${esc(s.fac)}</dd><dt>Products / services</dt><dd>${esc(s.cat)}</dd><dt>Added</dt><dd>${fd(s.added)}</dd></dl></div></div>`;
+  } else if(tab==='assessments'){
+    body=`<table class="tbl"><thead><tr><th>Assessment</th><th>Period</th><th>Status</th><th>Due</th><th class="num">Answered</th><th></th></tr></thead><tbody>${as.map(a=>{const A=asm(a.aid);return `<tr><td><a class="nm" href="#/assessments/${A.id}">${esc(A.title)}</a><small>${A.type}</small></td><td>${A.period}</td><td>${stHtml(a)}</td><td>${fd(a.due)}</td><td class="num">${a.answered}/${A.q}</td><td>${['submitted','reviewed','reopened'].includes(a.st)?`<a class="link" href="#/response/${A.id}/${id}">Open response</a>`:a.st==='not_invited'?`<button class="btn sm pri" data-act="inviteOne" data-arg="${A.id}|${id}">Invite</button>`:''}</td></tr>`}).join('')}</tbody></table>`;
+  } else if(tab==='evidence'){
+    const ev=EVIDENCE.filter(e=>e.sid===id);
+    body=`<div class="card"><h3>Documents and answers</h3><p class="q">Evidence uploaded with each assessment. Review it on the response page, next to the answer it supports.</p>${ev.length?ev.map(e=>`<div class="chk"><span class="doc">📄 ${esc(e.file)}</span><span><b>${esc(e.q)}</b><small>${esc(asm(e.aid).title)} · uploaded ${fd(e.at)} · ${e.st}</small></span><a class="link" style="margin-left:auto" href="#/response/${e.aid}/${id}">Review</a></div>`).join(''):`<div class="empty">No documents waiting for review.</div>`}${latest?`<a class="btn" href="#/response/${latest.aid}/${id}">Open latest response →</a>`:''}</div>`;
+  } else if(tab==='flags'){
+    body=`<div class="grid2"><div class="card"><h3>Red flags</h3><p class="q">Each red flag links to its improvement action</p>${fl.map(f=>`<div class="chk"><span class="risk High"><i></i></span><span><b>${esc(f.text)}</b><small>${esc(f.cause)} · ${f.status}</small></span>${f.status==='Open'?`<button class="btn sm" style="margin-left:auto" data-act="raiseAction" data-arg="${f.id}">Raise action</button>`:''}</div>`).join('')||'<div class="empty">No red flags.</div>'}</div>
+     <div class="card"><h3>Improvement actions</h3><p class="q">Tracked into next year's score</p>${ac.map(a=>`<div class="chk"><span><b>${esc(a.title)}</b><small>${a.st} · due ${fd(a.due)} · owner ${esc(a.owner)}</small></span></div>`).join('')||'<div class="empty">No actions.</div>'}</div></div>`;
+  } else if(tab==='qa'){
+    body=`<div class="card"><h3>Questions and answers</h3><p class="q">Every thread with this supplier, on any answer</p>${thr.length?thr.map(([k,m])=>{const [aid,,c]=k.split('|');const q=QBANK.find(x=>x.code===c);return `<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px"><div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><b>${esc(q?q.t:c)}</b><a class="link" style="margin-left:auto;font-size:13px" href="#/response/${aid}/${id}">Open in response →</a></div>${m.map(msgHtml).join('')}</div>`}).join(''):`<div class="empty">No questions yet. Ask one from any answer on the response page.</div>`}</div>`;
+  } else {
+    body=`<div class="card"><ul class="timeline">${[
+      ...as.filter(a=>a.st!=='not_invited').map(a=>({d:a.due,t:`${ST_LABEL[a.st]} · ${asm(a.aid).title}`})),
+      ...fl.map(f=>({d:'2026-11-01',t:`Red flag raised: ${f.text}`})),
+      {d:s.added,t:'Supplier added'}].sort((a,b)=>(b.d||'')>(a.d||'')?1:-1).map(x=>`<li>${esc(x.t)}<small>${fd(x.d)}</small></li>`).join('')}</ul></div>`;
+  }
+  return head(`<span class="prof"><span class="big">${initials(s.name)}</span><span>${esc(s.name)} <span style="font-size:13px;font-weight:500">${tierHtml(s.tier)}</span><span style="display:block;font-size:13px;font-weight:400;color:var(--ink2);margin-top:4px">${s.id} · ${esc(s.cat)} · ${esc(s.city)} · spend ${inr(s.spend)} · ${riskHtml(r)}</span></span></span>`,'',
+    `<button class="btn" data-act="toastMsg" data-arg="Edit supplier details">Edit</button><button class="btn" data-act="openAsk" data-arg="${id}">Ask a question</button><button class="btn pri" data-act="bulkAdd" data-arg="${id}">Add to assessment</button>`,`<a href="#/suppliers">Suppliers</a> / ${esc(s.name)}`)+
+   tabs(`suppliers/${id}`,[['overview','Overview'],['assessments','Assessments',as.length],['evidence','Answers & evidence'],['flags','Red flags & actions',fl.length+ac.length],['qa','Q&A',thr.length],['activity','Activity']],tab)+body;
+}
+
+/* ---- Assessments ---- */
+P.assessments=(id,tab)=>{
+  if(id&&!['active','drafts','closed'].includes(id)) return asmDetail(id,tab||'progress');
+  const t=id||'active';const map={active:'Active',drafts:'Draft',closed:'Closed'};
+  const list=ASSESS.filter(a=>a.status===map[t]);
+  return head('Assessments','Each assessment sends one questionnaire to the suppliers you choose, with one due date',`<button class="btn pri" data-act="newAssess">+ New assessment</button>`)+
+  tabs('assessments',[['active','Active',ASSESS.filter(a=>a.status==='Active').length],['drafts','Drafts',ASSESS.filter(a=>a.status==='Draft').length],['closed','Closed',ASSESS.filter(a=>a.status==='Closed').length]],t)+
+  `<table class="tbl"><thead><tr><th>Assessment</th><th>Type</th><th style="width:260px">Progress</th><th>Due</th><th class="num">Avg score</th><th class="num">Red flags</th><th></th></tr></thead><tbody>
+  ${list.map(a=>{const as=ASSIGN.filter(x=>x.aid===a.id);const tot=a.type==='Materiality'?SURVEY.reduce((s,x)=>s+x.of,0):as.length;const sub=a.type==='Materiality'?SURVEY.reduce((s,x)=>s+x.done,0):as.filter(x=>['submitted','reviewed','reopened'].includes(x.st)).length;const rev=as.filter(x=>x.st==='reviewed').length;const ni=as.filter(x=>x.st==='not_invited').length;
+   const sc=avg(as.filter(x=>x.st==='reviewed'||x.st==='submitted').map(x=>a.type==='Annual ESG'?sup(x.sid).score:null));const fl=FLAGS.filter(f=>f.aid===a.id&&f.status!=='Closed').length;
+   return `<tr><td><a class="nm" href="#/assessments/${a.id}">${esc(a.title)}</a><small>${a.period}${a.tier?` · Tier ${a.tier}`:a.type==='Materiality'?' · Stakeholders':''} · ${a.q} questions</small></td><td><span class="pill ${a.type==='Materiality'?'p-blue':a.type==='Onboarding'?'p-grey':'p-brand'}">${a.type}</span></td>
+   <td>${tot?`<div class="bar" style="height:8px">${rev&&a.type!=='Materiality'?`<span style="width:${rev/tot*100}%;background:var(--good)"></span>`:''}<span style="width:${(sub-(a.type==='Materiality'?0:rev))/tot*100}%;background:${C1}"></span></div><small style="margin-top:4px">${sub} of ${tot} ${a.type==='Materiality'?'responses':'submitted'}${rev&&a.type!=='Materiality'?` · ${rev} reviewed`:''}${ni?` · <span style="color:#a52222">${ni} not invited</span>`:''}</small>`:'<small>No suppliers yet</small>'}</td>
+   <td>${a.due?`${fd(a.due)}${isOverdue(a.due)&&a.status==='Active'?' <span class="pill p-crit">Past due</span>':''}`:'—'}</td><td class="num">${sc!=null?Math.round(sc):'—'}</td><td class="num">${fl||'—'}</td><td><a class="link" href="#/assessments/${a.id}">Open</a></td></tr>`}).join('')||`<tr><td colspan="7" class="empty">Nothing here yet.</td></tr>`}
+  </tbody></table>`;
+};
+function asmDetail(id,tab){
+  const a=asm(id);if(!a) return '<div class="empty">Not found</div>';
+  if(a.type==='Materiality') {location.hash='#/materiality/survey';return ''}
+  const as=ASSIGN.filter(x=>x.aid===id);const ni=as.filter(x=>x.st==='not_invited');
+  let body='';
+  if(tab==='progress'){
+    const st=stages(as);
+    body=`<div class="grid2"><div class="card"><h3>${st[3].t1+st[3].t2} of ${as.length} suppliers have submitted</h3><p class="q">Where suppliers are in this assessment</p>${funnelSvg(st,true)}</div>
+     <div class="stack">${ni.length?`<div class="callout crit"><b>${ni.length} supplier${ni.length>1?'s have':' has'} not been invited.</b> ${ni.map(x=>esc(sup(x.sid).name)).join(', ')} won't hear from you until you send the invite.<div style="margin-top:10px"><button class="btn sm pri" data-act="inviteAll" data-arg="${id}">Invite ${ni.length} now, due ${fds(addDays(SETTINGS.onbDays))}</button></div></div>`:''}
+     <div class="card"><h3>Key dates</h3><p class="q">Reminders go out on these dates to suppliers who haven't submitted</p><ul class="timeline">${a.started?`<li>Started<small>${fd(a.started)}</small></li>`:''}${SETTINGS.remind.map(d=>{const x=new Date(a.due+'T00:00:00');x.setDate(x.getDate()-d);return `<li>Reminder, ${d} day${d>1?'s':''} before<small>${fd(x.toISOString().slice(0,10))}${x<TODAY?' · sent':''}</small></li>`}).join('')}<li><b>Due</b><small>${fd(a.due)}${isOverdue(a.due)?' · past due':''}</small></li><li>Escalation to admins<small>${SETTINGS.escalate} days after the due date</small></li></ul></div></div></div>`;
+  } else if(tab==='suppliers'){
+    body=`<div class="filters"><span style="color:var(--ink2)">${as.length} suppliers in this assessment</span><button class="btn sm" style="margin-left:auto" data-act="bulkAdd" data-arg="">+ Add suppliers</button></div>
+    <table class="tbl"><thead><tr><th>Supplier</th><th>Status</th><th>Due</th><th style="width:150px">Progress</th><th class="num">Score</th><th>Risk</th><th class="num">Open items</th><th></th></tr></thead><tbody>${as.map(x=>{const s=sup(x.sid);return `<tr><td><a class="nm" href="#/suppliers/${s.id}">${esc(s.name)}</a><small>Tier ${s.tier}</small></td><td>${stHtml(x)}</td><td>${fd(x.due)}</td><td><div class="bar"><span style="width:${x.answered/a.q*100}%;background:${C1}"></span></div><small>${x.answered}/${a.q} answered</small></td><td class="num">${a.type==='Annual ESG'&&['submitted','reviewed'].includes(x.st)?s.score:'—'}</td><td>${riskHtml(riskOf(s))}</td><td class="num">${openItems(s)||'—'}</td><td>${x.st==='not_invited'?`<button class="btn sm pri" data-act="inviteOne" data-arg="${id}|${s.id}">Invite</button>`:['submitted','reviewed','reopened'].includes(x.st)?`<a class="link" href="#/response/${id}/${s.id}">${x.st==='submitted'?'Review':'Open'}</a>`:`<button class="btn sm" data-act="toastMsg" data-arg="Reminder sent to ${esc(s.name)}">Remind</button>`}</td></tr>`}).join('')}</tbody></table>`;
+  } else if(tab==='results'){
+    const sc=as.filter(x=>['submitted','reviewed'].includes(x.st)).map(x=>sup(x.sid)).filter(s=>s.score!=null);
+    body=a.type!=='Annual ESG'?`<div class="card"><h3>Onboarding checks</h3><p class="q">Onboarding is pass/fail on compliance; it isn't scored for maturity.</p>${hbarSvg([{l:'Passed all checks',v:as.filter(x=>x.st==='reviewed'&&!openFlags(x.sid).length).length,c:C1},{l:'Red flag raised',v:new Set(FLAGS.filter(f=>f.aid===id).map(f=>f.sid)).size},{l:'Not submitted yet',v:as.filter(x=>!['submitted','reviewed','reopened'].includes(x.st)).length}])}</div>`:
+    `<div class="grid2"><div class="card"><h3>Average score ${Math.round(avg(sc.map(s=>s.score)))} across ${sc.length} suppliers</h3><p class="q">Score by supplier, highest first</p>${hbarSvg(sc.sort((p,q)=>q.score-p.score).map(s=>({l:s.name,v:s.score,c:maturity(s.score).c,tip:`${s.name}: ${s.score} · ${maturity(s.score).name}`})),{max:100})}</div>
+     <div class="card"><h3>Average by area</h3><p class="q">Where this group is strong and weak</p>${hbarSvg(areaAverages(sc).map((v,i)=>({l:AREAS[i],v:v==null?0:Math.round(v),vl:v==null?'n/a':Math.round(v),c:GREY})),{max:100,lab:180})}</div></div>`;
+  } else {
+    body=`<div class="grid2"><div class="card"><h3>Questions</h3><p class="q">${a.q} questions from the ${a.type} template for Tier ${a.tier}</p><dl class="kv"><dt>Required</dt><dd>All red-flag and evidence questions</dd><dt>Questionnaire</dt><dd><a class="link" href="#/questionnaires/bank">View in question bank</a></dd><dt>Compared with</dt><dd>${a.type} · Tier ${a.tier} · previous period (automatic)</dd></dl></div>
+    <div class="card"><h3>Reminders and message</h3><p class="q">Applies to every supplier in this assessment</p><dl class="kv"><dt>Reminders</dt><dd>${SETTINGS.remind.join(', ')} days before the due date</dd><dt>Escalation</dt><dd>${SETTINGS.escalate} days overdue → client admins</dd><dt>Message</dt><dd style="font-weight:400">Please complete this assessment by the due date. Use the question icon on any answer if something is unclear.</dd></dl><div style="margin-top:12px;display:flex;gap:8px"><button class="btn sm" data-act="toastMsg" data-arg="Export started">Export responses</button><button class="btn sm bad" data-act="toastMsg" data-arg="Assessment closed">Close assessment</button></div></div></div>`;
+  }
+  return head(esc(a.title),`${a.type} · ${a.period}${a.tier?` · Tier ${a.tier}`:''} · due ${fd(a.due)}`,`<button class="btn" data-act="toastMsg" data-arg="Reminder sent to suppliers who haven't submitted">Send reminder now</button><button class="btn pri" data-act="bulkAdd" data-arg="">+ Add suppliers</button>`,`<a href="#/assessments">Assessments</a> / ${esc(a.title)}`)+
+   tabs(`assessments/${id}`,[['progress','Progress'],['suppliers','Suppliers',as.length],['results','Results'],['settings','Settings']],tab)+body;
+}
+
+/* ---- Reviews ---- */
+P.reviews=(tab)=>{
+  tab=tab||'responses';const n=needs();
+  const subm=activeAssign().filter(a=>a.st==='submitted');
+  let body='';
+  if(tab==='responses') body=`<table class="tbl"><thead><tr><th>Supplier</th><th>Assessment</th><th>Submitted</th><th class="num">Score</th><th>Risk</th><th>Waiting on</th><th></th></tr></thead><tbody>${subm.map(x=>{const s=sup(x.sid),A=asm(x.aid);const ev=EVIDENCE.filter(e=>e.sid===s.id&&e.aid===A.id&&e.st==='Pending').length;return `<tr><td><a class="nm" href="#/suppliers/${s.id}">${esc(s.name)}</a><small>Tier ${s.tier}</small></td><td>${esc(A.title)}</td><td>${fd('2026-11-2'+(s.id.slice(-1)))}</td><td class="num">${s.score??'—'}</td><td>${riskHtml(riskOf(s))}</td><td>${ev?`${ev} document${ev>1?'s':''} to verify`:'Your review'}</td><td><a class="btn sm pri" href="#/response/${A.id}/${s.id}">Review</a></td></tr>`}).join('')||`<tr><td colspan="7" class="empty">Nothing waiting for review.</td></tr>`}</tbody></table>`;
+  else if(tab==='evidence') body=`<table class="tbl"><thead><tr><th>Document</th><th>Supplier</th><th>Supports the answer to</th><th>Uploaded</th><th></th></tr></thead><tbody>${EVIDENCE.filter(e=>e.st==='Pending').map(e=>`<tr><td><span class="doc">📄 ${esc(e.file)}</span></td><td><a class="nm" href="#/suppliers/${e.sid}">${esc(sup(e.sid).name)}</a></td><td>${esc(e.q)}<small>${esc(asm(e.aid).title)}</small></td><td>${fd(e.at)}</td><td style="white-space:nowrap"><button class="btn sm ok" data-act="evid" data-arg="${e.id}|Accepted">Accept</button> <button class="btn sm bad" data-act="evid" data-arg="${e.id}|Rejected">Reject</button> <a class="link" style="margin-left:6px" href="#/response/${e.aid}/${e.sid}">In context</a></td></tr>`).join('')||`<tr><td colspan="5" class="empty">No documents to verify.</td></tr>`}</tbody></table><p class="hint">Accept only if the document is valid, legible, in the supplier's name, in date, and supports the answer. Accepted documents raise data confidence.</p>`;
+  else if(tab==='clarifications') body=Object.entries(THREADS).map(([k,m])=>{const [aid,sid,c]=k.split('|');const q=QBANK.find(x=>x.code===c);const last=m.at(-1);return `<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><b>${esc(sup(sid).name)}</b><span style="color:var(--ink2)">on “${esc(q?q.t:c)}”</span><span class="pill ${last.who==='sup'?'p-brand':'p-grey'}" style="margin-left:auto">${last.who==='sup'?'Awaiting your reply':'Awaiting supplier'}</span></div>${m.map(msgHtml).join('')}<a class="link" href="#/response/${aid}/${sid}">Reply in the response →</a></div>`}).join('');
+  else body=`<table class="tbl"><thead><tr><th>Red flag</th><th>Supplier</th><th>Cause</th><th>Assessment</th><th>Status</th><th></th></tr></thead><tbody>${FLAGS.filter(f=>f.status!=='Closed').map(f=>`<tr><td><span class="risk High"><i></i></span> ${esc(f.text)}</td><td><a class="nm" href="#/suppliers/${f.sid}">${esc(sup(f.sid).name)}</a></td><td>${esc(f.cause)}</td><td>${esc(asm(f.aid).title)}</td><td>${f.status==='Open'?'<span class="pill p-crit">Open</span>':'<span class="pill p-grey">Action raised</span>'}</td><td>${f.status==='Open'?`<button class="btn sm pri" data-act="raiseAction" data-arg="${f.id}">Raise action</button>`:`<a class="link" href="#/actions">View action</a>`}</td></tr>`).join('')}</tbody></table>`;
+  return head('Reviews','Everything waiting on your team, in one inbox')+tabs('reviews',[['responses','Responses',n.review],['evidence','Evidence',n.evidence],['clarifications','Clarifications',n.clar],['flags','Red flags',n.flags]],tab)+body;
+};
+function msgHtml(m){return `<div class="msg ${m.who==='you'?'you':'sup'}"><span class="who">${initials(m.name)}</span><div class="tx">${esc(m.text)}<small>${esc(m.name)} · ${fd(m.at)}</small></div></div>`}
+
+/* ---- Response review ---- */
+function answerFor(s,q){
+  const v=q.area!=null&&s.areas?s.areas[q.area]:s.score;
+  if(q.type==='Text') return q.code==='OB-01'?s.name:q.code==='OB-02'?`${s.city}, ${s.city==='Pune'?'Maharashtra':'India'}`:s.cat;
+  if(q.code==='OB-05') return FLAGS.some(f=>f.sid===s.id&&f.code==='OB-05')?'Yes, we hold a valid CTO — renewal in process':'Yes, we hold a valid CTO (expires Mar 2028)';
+  if(q.code==='OB-08') return FLAGS.some(f=>f.sid===s.id&&f.code==='OB-08')?'Yes — penalty or legal notice received (details in remarks)':'No penalties in the past 3 years';
+  if(q.code==='S-03') return FLAGS.some(f=>f.sid===s.id&&f.code==='S-03')?'Partly — overtime limits exceeded in some months':'Yes, audited annually';
+  if(v==null) return 'Not applicable for this tier';
+  return v>=80?'D — Leading practice, verified':v>=65?'C — Formal system in place, partly verified':v>=45?'B — Some practice, not yet formal':'A — Not in place';
+}
+P.response=(aid,sid)=>{
+  const A=asm(aid),s=sup(sid),x=ASSIGN.find(y=>y.aid===aid&&y.sid===sid);if(!A||!s||!x) return '<div class="empty">Response not found</div>';
+  const base=QBANK.filter(q=>q.tpl===A.type&&q.tiers.includes(s.tier));
+  const extraCodes=new Set([...Object.keys(THREADS).filter(k=>k.startsWith(aid+'|'+sid+'|')).map(k=>k.split('|')[2]),...FLAGS.filter(f=>f.aid===aid&&f.sid===sid).map(f=>f.code),...EVIDENCE.filter(e=>e.aid===aid&&e.sid===sid).map(e=>e.code)]);
+  const extra=QBANK.filter(q=>extraCodes.has(q.code)&&!base.includes(q));
+  const qs=[...extra,...base];
+  let acc=0,flg=0,openQ=0;
+  const items=qs.map(q=>{const k=`${aid}|${sid}|${q.code}`;const ev=EVIDENCE.find(e=>e.sid===sid&&e.aid===aid&&e.code===q.code);const isRf=FLAGS.find(f=>f.sid===sid&&f.aid===aid&&f.code===q.code);
+    let st=REVIEWSTATE[k]||(isRf?'flagged':(x.st==='reviewed'?'accepted':null));if(st==='accepted')acc++;if(st==='flagged')flg++;const th=THREADS[k]||[];if(th.length&&th.at(-1).who==='sup')openQ++;
+    return `<div class="ans ${st||''}" id="q-${q.code}"><div class="qq">${code(q.code)}<span>${q.sec}${q.area!=null?' · '+AREAS[q.area]:''}</span>${q.rf?'<span class="pill p-crit" style="font-size:11px">Red-flag question</span>':''}${st==='accepted'?'<span class="pill p-good" style="margin-left:auto">✓ Accepted</span>':st==='flagged'?'<span class="pill p-crit" style="margin-left:auto">⚑ Flagged</span>':''}</div>
+     <div class="qt">${esc(q.t)}</div><div class="aa">${esc(answerFor(s,q))}${isRf?`<div style="color:#a52222;font-size:12.5px;margin-top:4px">⚑ ${esc(isRf.text)}</div>`:''}</div>
+     <div class="ab">${q.ev?(ev?`<span class="doc">📄 ${esc(ev.file)}</span><span class="pill ${ev.st==='Pending'?'p-warn':ev.st==='Accepted'?'p-good':'p-crit'}">${ev.st==='Pending'?'Document to verify':ev.st}</span>`:isRf?`<span class="pill p-crit">Document missing</span>`:`<span class="doc">📄 Evidence on file</span>`):''}
+      <span style="flex:1"></span><button class="btn sm ok" data-act="rv" data-arg="${k}|accepted">Accept</button><button class="btn sm bad" data-act="rv" data-arg="${k}|flagged">Flag</button><button class="btn sm" data-act="toggleThread" data-arg="${q.code}">💬 Ask supplier${th.length?` (${th.length})`:''}</button></div>
+     <div class="thread" id="th-${q.code}" style="${th.length?'':'display:none'}">${th.map(msgHtml).join('')}<div class="compose"><input class="inp" placeholder="Ask ${esc(s.contact)} about this answer…" id="in-${q.code}"><button class="btn sm pri" data-act="send" data-arg="${k}|${q.code}">Send</button></div></div></div>`}).join('');
+  const r=riskOf(s);
+  return head(`${esc(s.name)} · ${esc(A.title)}`,`Submitted by ${esc(s.contact)} · ${x.answered}/${A.q} answered · ${ST_LABEL[x.st]}`,`<button class="btn" data-act="toastMsg" data-arg="Score override opens here">Override score</button><a class="btn" href="#/suppliers/${sid}">Supplier profile</a>`,`<a href="#/reviews">Reviews</a> / ${esc(s.name)}`)+
+  `<div class="side2"><div><p class="hint" style="margin:0 0 10px">Showing ${qs.length} sample questions. Accept, flag or ask on each answer; documents open next to the answer they support.</p>${items}
+   <div class="sticky"><span><b>${acc}</b> accepted · <b>${flg}</b> flagged · <b>${openQ}</b> question${openQ===1?'':'s'} awaiting you · <b>${qs.length-acc-flg}</b> to check</span><span style="flex:1"></span><button class="btn" data-act="sendBack" data-arg="${aid}|${sid}">Send back to supplier</button><button class="btn pri" data-act="markReviewed" data-arg="${aid}|${sid}">Mark reviewed</button></div></div>
+   <div class="stack"><div class="card"><h3>Scorecard</h3><p class="q">Performance = average of the area scores</p>
+    <div class="lens" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px"><div><small style="color:var(--ink2)">Score</small><div style="font-size:22px;font-weight:650">${A.type==='Annual ESG'&&s.score!=null?s.score:'—'}</div>${A.type==='Annual ESG'?matHtml(s.score):'<small style="color:var(--muted)">Onboarding isn\'t scored</small>'}</div><div><small style="color:var(--ink2)">Risk</small><div style="margin-top:6px">${riskHtml(r)}</div></div><div><small style="color:var(--ink2)">Compliance</small><div style="font-size:18px;font-weight:650">${s.comp??'—'}${s.comp!=null?'%':''}</div></div><div><small style="color:var(--ink2)">Data confidence</small><div style="font-size:18px;font-weight:650">${s.conf??'—'}${s.conf!=null?'%':''}</div></div></div>
+    ${A.type==='Annual ESG'&&s.areas?hbarSvg(s.areas.map((v,i)=>({l:AREA_SHORT[i],v:v??0,vl:v??'n/a',c:v==null?GREY:C1})),{max:100,lab:70,W:300}):''}</div>
+    <div class="card"><h3>Activity</h3><ul class="timeline" style="margin-top:10px">${x.st==='reviewed'?'<li>Marked reviewed<small>Your team</small></li>':''}<li>Submitted<small>${esc(s.contact)} · supplier</small></li><li>Started answering<small>${esc(s.contact)}</small></li><li>Invitation sent<small>Your team · due ${fd(x.due)}</small></li><li>Added to the assessment<small>${fd(A.started)}</small></li></ul></div></div></div>`;
+};
+
+/* ---- Actions ---- */
+P.actions=()=>{
+  const cols=['Open','In progress','Awaiting approval','Closed'];
+  return head('Improvement actions','Raised from red flags and low scores; each one is tracked into next year\'s score',`<button class="btn pri" data-act="toastMsg" data-arg="New action form opens here">+ New action</button>`)+
+  `<div class="board">${cols.map(c=>{const l=ACTIONS.filter(a=>a.st===c);return `<div class="col"><h4>${c}<span>${l.length}</span></h4>${l.map(a=>{const f=FLAGS.find(x=>x.id===a.flag);const od=c!=='Closed'&&isOverdue(a.due);return `<div class="tcard"><b>${esc(a.title)}</b><div class="meta"><a class="link" href="#/suppliers/${a.sid}">${esc(sup(a.sid).name)}</a> · ${esc(a.owner)}</div><div class="meta" style="margin-top:6px">${od?'<span class="pill p-crit">Overdue</span>':''}<span>Due ${fds(a.due)}</span>${f?`<span class="pill p-grey">⚑ ${esc(f.cause)}</span>`:''}</div>${c==='Awaiting approval'?`<div style="margin-top:8px;display:flex;gap:6px"><button class="btn sm ok" data-act="actMove" data-arg="${a.id}|Closed">Approve & close</button><button class="btn sm" data-act="actMove" data-arg="${a.id}|In progress">Send back</button></div>`:''}</div>`}).join('')||'<div class="empty">None</div>'}</div>`}).join('')}</div>`;
+};
+
+/* ---- Risk & performance ---- */
+P.risk=(tab)=>{
+  tab=tab||'matrix';const scored=SUP.filter(s=>s.score!=null);let body='';
+  if(tab==='matrix'){const eng=scored.filter(s=>s.spend>=SETTINGS.highSpend&&s.score<60);
+    body=`<div class="side2"><div class="card"><h3>${eng.length} high-spend suppliers score below 60</h3><p class="q">Spend × ESG performance. Dashed lines = high-spend threshold (${inr(SETTINGS.highSpend)}) and score 60.</p>${riskSvg(scored)}</div>
+    <div class="card"><h3>Engage first</h3><p class="q">Highest spend first</p>${eng.sort((a,b)=>b.spend-a.spend).map(s=>`<div class="chk"><span><b><a href="#/suppliers/${s.id}">${esc(s.name)}</a></b><small>Score ${s.score} · ${inr(s.spend)} · weakest: ${AREAS[s.areas.indexOf(Math.min(...s.areas.filter(v=>v!=null)))]}</small></span></div>`).join('')}
+    <h3 style="margin-top:16px">Not yet assessed</h3><p class="q">No score yet, so not on the matrix</p>${SUP.filter(s=>s.score==null).map(s=>`<div style="font-size:13px;padding:3px 0"><a class="link" href="#/suppliers/${s.id}">${esc(s.name)}</a> <span style="color:var(--muted)">· ${inr(s.spend)}</span></div>`).join('')}</div></div>`;}
+  else if(tab==='heatmap') body=`<div class="card"><h3>Supplier × area scores</h3><p class="q">Sorted by spend. Hover a cell for detail; click a name for the profile.</p>${heatLegend()}<div style="max-width:720px">${heatSvg([...scored].sort((a,b)=>b.spend-a.spend))}</div></div>`;
+  else if(tab==='areas'){const i=state.rpArea;const rows=scored.filter(s=>s.areas[i]!=null).sort((a,b)=>b.areas[i]-a.areas[i]);
+    body=`<div class="filters">${AREAS.map((a,k)=>`<button class="btn sm ${k===i?'pri':''}" data-act="rpArea" data-arg="${k}">${a}</button>`).join('')}</div>
+    <div class="grid2"><div class="card"><h3>${AREAS[i]}: average ${Math.round(avg(rows.map(s=>s.areas[i])))} across ${rows.length} suppliers</h3><p class="q">Score by supplier, highest first${i===1?' · Tier 1 only':''}</p>${hbarSvg(rows.map(s=>({l:s.name,v:s.areas[i],c:heatC(s.areas[i]).c,tip:`${s.name} · ${AREAS[i]}: ${s.areas[i]}`})),{max:100})}</div>
+    <div class="card"><h3>What this area covers</h3><p class="q">From the scoring methodology</p><p style="margin:0 0 12px">${['Scope 1 + 2 emissions, renewable electricity and climate targets','Emissions allocated to your spend and primary-data coverage (Tier 1 only)','Water withdrawal, permits, wastewater recycling or zero liquid discharge','Waste diversion, hazardous waste and chemical handling','Supplier code of conduct, due diligence and responsible minerals','Wages, working hours, human rights, safety systems and injury rates','Anti-bribery, penalties, data protection and grievance handling'][i]}</p>
+    <h4 style="font-size:13px;margin-bottom:6px">Suppliers to engage</h4>${rows.filter(s=>s.areas[i]<50).map(s=>`<div style="font-size:13px;padding:3px 0"><a class="link" href="#/suppliers/${s.id}">${esc(s.name)}</a> · ${s.areas[i]}</div>`).join('')||'<div style="font-size:13px;color:var(--muted)">None below 50.</div>'}
+    <p class="hint" style="margin-top:12px">Framework mappings (BRSR, EcoVadis, Scope 3) for this area are in <a class="link" href="#/reports">Reports &amp; exports</a>.</p></div></div>`;}
+  else {const sl=slopeSvg(scored);const yo=scored.filter(s=>s.prev!=null).map(s=>({l:s.name,v:s.score-s.prev}));
+    body=`<div class="grid2"><div class="card"><h3>${AREAS[sl.best]} improved most, +${sl.bd} points</h3><p class="q">Average area score, 2025 → 2026</p>${sl.svg}</div>
+    <div class="card"><h3>${yo.filter(r=>r.v>=5).length} suppliers improved by 5+ points; ${yo.filter(r=>r.v<=-5).length} declined</h3><p class="q">Change in ESG score vs 2025 (±5 = improved / declined)</p>${hbarSvg(yo.sort((a,b)=>b.v-a.v).map(r=>({l:r.l,v:Math.abs(r.v),vl:(r.v>=0?'+':'−')+Math.abs(r.v),c:r.v>=5?'#0ca30c':r.v<=-5?'#d03b3b':GREY,tip:`${r.l}: ${r.v>=0?'+':''}${r.v} points`})),{max:10})}<div class="legend" style="margin-top:8px"><span><i style="background:#0ca30c"></i>▲ Improved</span><span><i style="background:${GREY}"></i>Steady</span><span><i style="background:#d03b3b"></i>▼ Declined</span></div></div></div>`;}
+  return head('Risk & performance','Where your supply base stands, by supplier and by area')+tabs('risk',[['matrix','Risk matrix'],['heatmap','Area heatmap'],['areas','Area deep-dive'],['trends','Trends']],tab)+body;
+};
+
+/* ---- Materiality ---- */
+P.materiality=(tab)=>{
+  tab=tab||'matrix';let body='';const mat=TOPICS.filter(t=>t.imp>=3.5||t.fin>=3.5);
+  if(tab==='matrix') body=`<div class="side2"><div class="card"><h3>${TOPICS.filter(t=>t.imp>=3.5&&t.fin>=3.5).length} topics are double material; ${mat.length} of ${TOPICS.length} are material overall</h3><p class="q">Average stakeholder rating, 1–5. Threshold 3.5 on either axis = material.</p>${matrixSvg(true)}</div>
+   <div class="card"><h3>Topics</h3><p class="q">Numbers match the dots</p>${TOPICS.map(t=>`<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:13px"><span style="width:22px;height:22px;border-radius:50%;background:${t.imp>=3.5||t.fin>=3.5?C1:GREY};color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none">${t.n}</span>${esc(t.t)}${t.imp>=3.5&&t.fin>=3.5?'<span class="pill p-blue" style="margin-left:auto">Double</span>':''}</div>`).join('')}</div></div>`;
+  else if(tab==='topics') body=`<table class="tbl"><thead><tr><th>#</th><th>Topic</th><th class="num">Impact</th><th class="num">Financial</th><th>Result</th><th>Scoring area it drives</th><th>Effect on Annual ESG</th></tr></thead><tbody>${TOPICS.map(t=>{const m=t.imp>=3.5||t.fin>=3.5;return `<tr><td>${t.n}</td><td><b>${esc(t.t)}</b></td><td class="num">${t.imp.toFixed(1)}</td><td class="num">${t.fin.toFixed(1)}</td><td>${t.imp>=3.5&&t.fin>=3.5?'<span class="pill p-blue">Double material</span>':m?'<span class="pill p-grey">Material</span>':'<span style="color:var(--muted)">Monitor</span>'}</td><td>${AREAS[t.area]}</td><td>${m?'Weight ×1.5; questions required':'Standard weight'}</td></tr>`}).join('')}</tbody></table><p class="hint">Weights are a proposal for the scoring engine; you confirm them in Questionnaires → Scoring rules before they apply.</p>`;
+  else body=`<div class="grid2"><div class="card"><h3>${SURVEY.reduce((s,x)=>s+x.done,0)} of ${SURVEY.reduce((s,x)=>s+x.of,0)} stakeholders have responded</h3><p class="q">Materiality Assessment 2026 · due ${fd('2026-12-20')}</p>${hbarSvg(SURVEY.map(g=>({l:g.g,v:Math.round(g.done/g.of*100),vl:`${g.done}/${g.of}`,c:g.done/g.of<0.5?C2:C1,tip:`${g.g}: ${g.done} of ${g.of} responded`})),{max:100,lab:160})}<div style="margin-top:12px;display:flex;gap:8px"><button class="btn sm" data-act="toastMsg" data-arg="Reminder sent to 9 stakeholders who haven't responded">Remind non-responders</button><button class="btn sm" data-act="toastMsg" data-arg="Add stakeholders opens here">+ Add stakeholders</button></div></div>
+   <div class="card"><h3>How it works</h3><ol style="margin:8px 0 0;padding-left:18px;line-height:1.7"><li>Pick topics: the 7 scoring areas plus sector topics.</li><li>Invite stakeholders: internal teams, selected suppliers, customers.</li><li>Each rates every topic for impact and for financial importance, 1–5.</li><li>The matrix updates as responses arrive.</li><li>Material topics weigh more in Annual ESG scoring and export to BRSR.</li></ol></div></div>`;
+  return head('Materiality','Double materiality: impact on people and planet × financial importance to the business',`<button class="btn" data-act="toastMsg" data-arg="Matrix exported">Export matrix</button><button class="btn pri" data-act="newAssess" data-arg="Materiality">+ New materiality assessment</button>`)+tabs('materiality',[['matrix','Matrix'],['topics','Topics',TOPICS.length],['survey','Stakeholder survey']],tab)+body;
+};
+
+/* ---- Data quality ---- */
+P.quality=()=>{
+  const l=SUP.filter(s=>s.conf!=null).sort((a,b)=>a.conf-b.conf);const low=l.filter(s=>s.conf<60);
+  const comp=[{l:'Verification · documents accepted',w:35,v:58},{l:'Completeness · documents and data given',w:20,v:71},{l:'Traceability · figures backed by a document',w:20,v:66},{l:'Coverage · questions answered',w:15,v:96},{l:'Timeliness · on time, in date',w:10,v:88}];
+  return head('Data quality','How far the scores can be relied on')+
+  `<div class="grid2"><div class="card"><h3>${low.length} suppliers have low data confidence (below 60%)</h3><p class="q">Data confidence by supplier, lowest first. Dashed lines = Medium (60) and High (80) bands.</p>${hbarSvg(l.map(s=>({l:s.name,v:s.conf,vl:s.conf+'%',c:s.conf<60?C1:GREY,tip:`${s.name}: ${s.conf}% · ${s.conf<60?'Low':s.conf<80?'Medium':'High'}`})),{max:100,refs:[{v:60,l:'Medium 60'},{v:80,l:'High 80'}]})}</div>
+  <div class="card"><h3>Verification holds confidence back most</h3><p class="q">Average score of each check across suppliers · weight in brackets</p>${hbarSvg(comp.map(c=>({l:`${c.l.split(' · ')[0]} (${c.w}%)`,v:c.v,vl:c.v+'%',c:c.v<70?C1:GREY,tip:`${c.l}\nAverage ${c.v}% · weight ${c.w}%`})),{max:100,lab:170})}<p class="hint">Confidence = 35% verification + 20% completeness + 20% traceability + 15% coverage + 10% timeliness.</p><div class="cf"><span>${needs().evidence} documents waiting to be verified</span><a class="link" href="#/reviews/evidence">Verify in Reviews →</a></div></div></div>`;
+};
+
+/* ---- Reports ---- */
+P.reports=()=>{
+  const R=[{t:'BRSR — Principle 6 & value chain',d:'Supplier environment data for your Business Responsibility and Sustainability Report.',cov:74},{t:'EcoVadis — Sustainable procurement',d:'Supplier engagement evidence mapped to EcoVadis criteria.',cov:68},{t:'Scope 3 Category 1 — Purchased goods',d:'Supplier-specific emissions allocated by your spend (Tier 1).',cov:52},{t:'Custom export',d:'Any assessment, any columns, as Excel or CSV.',cov:null}];
+  return head('Reports & exports','Framework mappings live here, not on the dashboards')+`<div class="grid2">${R.map(r=>`<div class="card"><h3>${r.t}</h3><p class="q">${r.d}</p>${r.cov!=null?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div class="bar" style="flex:1;height:8px"><span style="width:${r.cov}%;background:${C1}"></span></div><span style="font-size:13px;font-weight:600">${r.cov}% of fields covered</span></div>`:''}<div style="display:flex;gap:8px"><button class="btn sm pri" data-act="toastMsg" data-arg="${r.t}: export started">Export</button>${r.cov!=null?`<button class="btn sm" data-act="toastMsg" data-arg="Field mapping opens here">View field mapping</button>`:''}</div></div>`).join('')}</div>`;
+};
+
+/* ---- Questionnaires ---- */
+P.questionnaires=(tab)=>{
+  tab=tab||'templates';let body='';
+  if(tab==='templates'){const T=[['Onboarding','Tier 1',10,'Company, permits and policies. Compulsory.'],['Onboarding','Tier 2',5,'Short basic checks. Compulsory.'],['Annual ESG','Tier 1',50,'Carbon, Scope 3, water, waste, sourcing, labour, ethics.'],['Annual ESG','Tier 2',25,'Lighter yearly review across the same areas.'],['Materiality','Stakeholders',12,'Topic ratings for impact and financial importance.'],['Follow-up review','Any',8,'Targeted re-check after a red flag or action.'],['Custom','Any',0,'Build your own from the question bank.']];
+    body=`<div class="grid3">${T.map(t=>`<div class="card"><div style="display:flex;gap:8px;align-items:center"><h3>${t[0]}</h3><span class="pill p-grey">${t[1]}</span></div><p class="q">${t[3]}</p><div style="display:flex;gap:8px;align-items:center"><span style="font-size:13px;color:var(--ink2)">${t[2]?t[2]+' questions':'Empty'}</span><span style="flex:1"></span><button class="btn sm" data-act="toastMsg" data-arg="Template editor opens here">Edit</button><button class="btn sm pri" data-act="newAssess" data-arg="${t[0]}">Use</button></div></div>`).join('')}</div>`;}
+  else if(tab==='bank') body=`<div class="filters"><input class="inp" style="width:280px" placeholder="Search questions"><select class="inp"><option>All sections</option><option>General</option><option>Environment</option><option>Social</option><option>Governance</option></select><button class="btn sm pri" style="margin-left:auto" data-act="toastMsg" data-arg="New question form opens here">+ Add question</button></div>
+   <table class="tbl"><thead><tr><th>Question</th><th>Scoring area</th><th>Answer type</th><th>Evidence</th><th>Red flag</th><th>Tiers</th><th></th></tr></thead><tbody>${QBANK.map(q=>`<tr><td><b style="font-weight:500">${esc(q.t)}</b><small>${code(q.code)} · ${q.tpl}</small></td><td>${q.area!=null?AREAS[q.area]:'<span style="color:var(--muted)">Not scored</span>'}</td><td>${q.type}</td><td>${q.ev?'Required':'—'}</td><td>${q.rf?'<span class="risk High"><i></i>Yes</span>':'—'}</td><td>${q.tiers.map(t=>`Tier ${t}`).join(', ')}</td><td><button class="btn sm ghost" data-act="toastMsg" data-arg="Question editor opens here">Edit</button></td></tr>`).join('')}</tbody></table>`;
+  else body=`<div class="grid2"><div class="card"><h3>Maturity levels</h3><p class="q">Mapped from the performance score</p><table class="tbl"><thead><tr><th>Level</th><th>Score</th><th>Meaning</th></tr></thead><tbody>${MAT.map((m,i)=>`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${m.c};margin-right:8px"></span><b>${m.name}</b></td><td>${m.min}–${i<4?MAT[i+1].min-1:100}</td><td>${m.def}</td></tr>`).join('')}</tbody></table></div>
+   <div class="card"><h3>How scores are built</h3><p class="q">Three results per supplier, plus data confidence</p><dl class="kv"><dt>Area score</dt><dd style="font-weight:400">Points ÷ maximum for the area's questions × 100</dd><dt>Performance</dt><dd style="font-weight:400">Average of the area scores; material topics weigh ×1.5</dd><dt>Basic compliance</dt><dd style="font-weight:400">Checks passed ÷ applicable checks</dd><dt>Year on year</dt><dd style="font-weight:400">Change vs the same type and tier last period (±5 = improved / declined)</dd><dt>Risk: High</dt><dd style="font-weight:400">Any red flag, or performance below 40</dd><dt>Risk: Medium</dt><dd style="font-weight:400">Compliance below 100%, or performance 40–59</dd><dt>Risk: Low</dt><dd style="font-weight:400">Full compliance and performance 60+</dd></dl></div></div>`;
+  return head('Questionnaires','Templates, the question bank and scoring rules')+tabs('questionnaires',[['templates','Templates'],['bank','Question bank',QBANK.length],['scoring','Scoring rules']],tab)+body;
+};
+
+/* ---- Settings ---- */
+P.settings=(tab)=>{
+  tab=tab||'org';let body='';
+  if(tab==='org') body=`<div class="grid2"><div class="card"><h3>Organisation</h3><p class="q">Shown to suppliers on invitations</p><div class="fld"><label class="f">Organisation name</label><input class="inp" value="DCT, Pune"></div><div class="fld"><label class="f">Programme contact email</label><input class="inp" value="prajal@bharatcarbon.earth"></div><button class="btn pri sm" data-act="toastMsg" data-arg="Saved">Save</button></div>
+   <div class="card"><h3>Facilities</h3><p class="q">Suppliers are linked to the facility they supply</p><table class="tbl"><thead><tr><th>Facility</th><th>City</th><th class="num">Suppliers</th></tr></thead><tbody>${FACILITIES.map(f=>`<tr><td><b>${f.n}</b></td><td>${f.city}</td><td class="num">${f.sup}</td></tr>`).join('')}</tbody></table><button class="btn sm" style="margin-top:10px" data-act="toastMsg" data-arg="Add facility opens here">+ Add facility</button></div></div>`;
+  else if(tab==='tiers') body=`<div class="grid2"><div class="card"><h3>Tier rules</h3><p class="q">Used to suggest a tier when you add a supplier</p><div class="fld"><label class="f">Suggest Tier 1 when annual spend is at least (₹ lakh)</label><input class="inp" type="number" value="${SETTINGS.tier1Spend}" data-input="tier1Spend"></div><div class="fld"><label class="f">…or the category is critical</label><input class="inp" value="Chemicals, castings, polymers, PCBs, batteries"></div><div class="fld"><label class="f">High-spend threshold for the risk matrix (₹ lakh)</label><input class="inp" type="number" value="${SETTINGS.highSpend}" data-input="highSpend"></div><button class="btn pri sm" data-act="toastMsg" data-arg="Tier rules saved">Save</button></div>
+   <div class="card"><h3>What each tier gets</h3><p class="q">Assigned automatically when a supplier is added</p><dl class="kv"><dt>Tier 1 · critical</dt><dd style="font-weight:400">Onboarding (10 questions) + Annual ESG (50) + Scope 3 questions</dd><dt>Tier 2 · other</dt><dd style="font-weight:400">Onboarding (5 questions) + Annual ESG (25)</dd></dl></div></div>`;
+  else if(tab==='users') body=`<div class="card"><div style="display:flex;align-items:center"><div><h3>Users and roles</h3><p class="q">Admins can make changes; reviewers can accept evidence; viewers can only look</p></div><button class="btn sm pri" style="margin-left:auto" data-act="toastMsg" data-arg="Invite user opens here">+ Add user</button></div><table class="tbl"><thead><tr><th>User</th><th>Role</th><th>Status</th></tr></thead><tbody><tr><td><b>Prajal Sakhala</b> (you)<small>prajal@bharatcarbon.earth</small></td><td>Admin</td><td><span class="pill p-good">Active</span></td></tr></tbody></table></div>`;
+  else if(tab==='reminders') body=`<div class="grid2"><div class="card"><h3>Due dates and reminders</h3><p class="q">Defaults for new assessments and new suppliers</p><div class="fld"><label class="f">Default onboarding due date (days after invite)</label><input class="inp" type="number" value="${SETTINGS.onbDays}" data-input="onbDays"></div><div class="fld"><label class="f">Reminders before the due date (days)</label><input class="inp" value="${SETTINGS.remind.join(', ')}"></div><div class="fld"><label class="f">Escalate to admins after (days overdue)</label><input class="inp" type="number" value="${SETTINGS.escalate}"></div><button class="btn pri sm" data-act="toastMsg" data-arg="Reminder rules saved">Save</button></div>
+   <div class="card"><h3>Automation</h3><p class="q">What happens without anyone clicking</p>${[['Raise an improvement action for every red flag',true],['Remind suppliers about actions due in 7, 3 and 1 days',true],['Email admins a daily digest when something needs attention',true],['Also remind team users the supplier admin assigned',false]].map(([t,c])=>`<label class="chk"><input type="checkbox" ${c?'checked':''}><span><b>${t}</b></span></label>`).join('')}</div></div>`;
+  else body=`<div class="card"><h3>Email templates</h3><p class="q">What suppliers receive</p>${['Invitation to an assessment','Reminder before due date','Overdue reminder','Question from the client','Response sent back for changes'].map(t=>`<div class="chk"><span><b>${t}</b><small>Last edited by Bharat Carbon</small></span><button class="btn sm" style="margin-left:auto" data-act="toastMsg" data-arg="Template editor opens here">Edit</button></div>`).join('')}</div>`;
+  return head('Settings','')+tabs('settings',[['org','Organisation & facilities'],['tiers','Tiers & spend rules'],['users','Users & roles'],['reminders','Reminders & automation'],['emails','Email templates']],tab)+body;
+};
+
+/* ============ DRAWERS ============ */
+let W={};
+function openDrawer(html){$('#drawer').innerHTML=html;$('#drawer').classList.add('open');$('#scrim').classList.add('open')}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#scrim').classList.remove('open')}
+function stepsHtml(names,cur){return `<div class="steps">${names.map((n,i)=>`<div class="${i===cur?'on':i<cur?'done':''}">${i+1}. ${n}</div>`).join('')}</div>`}
+
+/* Add supplier: 4 steps */
+function addSupplierDrawer(){
+  const s=W.sup, st=W.step, names=['Basics','Classify','Assign','Send'];
+  const suggested=s.spend>=SETTINGS.tier1Spend||/chem|cast|polymer|pcb|batter/i.test(s.cat)?1:2;
+  let b='';
+  if(st===0) b=`<div class="fld"><label class="f">Company name *</label><input class="inp" data-w="name" value="${esc(s.name)}" placeholder="e.g. Nirmal Packaging"></div>
+    <div class="row2"><div class="fld"><label class="f">Contact person *</label><input class="inp" data-w="contact" value="${esc(s.contact)}"></div><div class="fld"><label class="f">Mobile</label><input class="inp" data-w="mobile" value="${esc(s.mobile)}" placeholder="+91"></div></div>
+    <div class="fld"><label class="f">Contact email *</label><input class="inp" data-w="email" value="${esc(s.email)}" placeholder="name@company.com"><div class="hint">The invitation goes to this address. They set their own password.</div></div>`;
+  else if(st===1) b=`<div class="row2"><div class="fld"><label class="f">Annual spend (₹ lakh) *</label><input class="inp" type="number" data-w="spend" value="${s.spend||''}"></div><div class="fld"><label class="f">City</label><input class="inp" data-w="city" value="${esc(s.city)}"></div></div>
+    <div class="fld"><label class="f">Products or services supplied *</label><input class="inp" data-w="cat" value="${esc(s.cat)}" placeholder="e.g. Process chemicals"></div>
+    <div class="fld"><label class="f">Facility it supplies</label><select class="inp" data-w="fac" style="width:100%">${FACILITIES.map(f=>`<option ${s.fac===f.n?'selected':''}>${f.n}</option>`).join('')}</select></div>
+    <label class="f">Tier *</label><div class="choice">${[1,2].map(t=>`<button class="opt ${s.tier===t?'on':''}" data-act="wTier" data-arg="${t}"><b>Tier ${t}${t===suggested?' · suggested':''}</b><small>${t===1?'Critical: onboarding (10) + annual ESG (50)':'Other: onboarding (5) + annual ESG (25)'}</small></button>`).join('')}</div>
+    <div class="hint">Suggested from spend ≥ ₹${SETTINGS.tier1Spend} L or a critical category. The full address is collected from the supplier during onboarding.</div>`;
+  else if(st===2){const ann=ASSESS.filter(a=>a.status==='Active'&&a.type==='Annual ESG'&&a.tier===s.tier)[0];
+    b=`<p style="margin-top:0;color:var(--ink2)">Choose what ${esc(s.name||'this supplier')} is asked to complete.</p>
+    <label class="chk"><input type="checkbox" checked disabled><span><b>Supplier Onboarding — Tier ${s.tier}</b><small>Compulsory for every supplier · ${s.tier===1?10:5} questions</small></span></label>
+    <div class="row2" style="margin:-2px 0 14px 28px"><div><label class="f">Due date</label><input class="inp" type="date" data-w="due" value="${s.due}"></div><div class="hint" style="align-self:end">Default: ${SETTINGS.onbDays} days after the invite (Settings)</div></div>
+    ${ann?`<label class="chk"><input type="checkbox" data-wck="annual" ${s.annual?'checked':''}><span><b>Also add to ${esc(ann.title)} ${ann.period}</b><small>Due ${fd(ann.due)} · ${ann.q} questions · opens after onboarding is submitted</small></span></label>`:''}
+    <label class="chk"><input type="checkbox" data-wck="mat" ${s.mat?'checked':''}><span><b>Invite as a stakeholder to the Materiality Assessment</b><small>12 topic ratings · due ${fd('2026-12-20')}</small></span></label>`;}
+  else b=`<div class="callout" style="margin-bottom:14px"><b>${esc(s.contact||'The contact')}</b> at <b>${esc(s.name)}</b> will get an email at <b>${esc(s.email)}</b> with a link to create a login and start Supplier Onboarding — Tier ${s.tier}, due <b>${fd(s.due)}</b>.</div>
+    <dl class="kv" style="margin-bottom:16px"><dt>Tier</dt><dd>Tier ${s.tier}</dd><dt>Annual spend</dt><dd>${inr(+s.spend||0)}</dd><dt>Assessments</dt><dd>Onboarding${s.annual?' + Annual ESG':''}${s.mat?' + Materiality survey':''}</dd><dt>Reminders</dt><dd>${SETTINGS.remind.join(', ')} days before the due date</dd></dl>
+    <label class="f">When to send</label><div class="choice"><button class="opt ${s.when==='now'?'on':''}" data-act="wWhen" data-arg="now"><b>Invite now</b><small>Email goes out immediately</small></button><button class="opt ${s.when==='later'?'on':''}" data-act="wWhen" data-arg="later"><b>Schedule</b><small>Pick a date and time</small></button></div>
+    ${s.when==='later'?`<div class="fld" style="margin-top:12px"><label class="f">Send on</label><input class="inp" type="datetime-local" value="${addDays(2)}T10:00"></div>`:''}`;
+  const ok=st===0?(s.name&&s.contact&&/@/.test(s.email)):st===1?(s.spend&&s.cat&&s.tier):true;
+  openDrawer(`<div class="dh"><h2>Add supplier</h2>${stepsHtml(names,st)}</div><div class="db">${b}</div><div class="df"><button class="btn" data-act="closeDrawer">Cancel</button><span class="sp"></span>${st>0?`<button class="btn" data-act="wBack">← Back</button>`:''}${st<3?`<button class="btn pri" data-act="wNext" ${ok?'':'disabled'}>Next →</button>`:`<button class="btn pri" data-act="wFinish">${s.when==='now'?'Add and send invite':'Add and schedule invite'}</button>`}</div>`);
+}
+
+/* New assessment: 4 steps */
+function newAssessDrawer(){
+  const a=W.asm,st=W.step,names=['Type','Questions','Suppliers & dates','Review & launch'];let b='';
+  const types=[['Onboarding','Company, permits and policy checks'],['Annual ESG','Yearly review across 7 scoring areas'],['Materiality','Stakeholder ratings of ESG topics'],['Follow-up review','Targeted re-check after a red flag'],['Custom','Build from the question bank']];
+  if(st===0) b=`<label class="f">Assessment type</label><div class="choice" style="margin-bottom:14px">${types.map(([t,d])=>`<button class="opt ${a.type===t?'on':''}" data-act="aType" data-arg="${t}"><b>${t}</b><small>${d}</small></button>`).join('')}</div>
+    ${a.type!=='Materiality'?`<label class="f">For</label><div class="seg" style="margin-bottom:14px">${[1,2].map(t=>`<button class="${a.tier===t?'on':''}" data-act="aTier" data-arg="${t}">Tier ${t}</button>`).join('')}</div>`:''}
+    <div class="row2"><div class="fld"><label class="f">Period</label><select class="inp" data-wa="period" style="width:100%">${['2026','2027','Q1 2027'].map(p=>`<option ${a.period===p?'selected':''}>${p}</option>`).join('')}</select></div><div class="fld"><label class="f">Title</label><input class="inp" data-wa="title" value="${esc(a.title||`${a.type} Assessment — ${a.type==='Materiality'?'Stakeholders':'Tier '+a.tier}`)}"></div></div>`;
+  else if(st===1){const qs=QBANK.filter(q=>(a.type==='Custom'||a.type==='Follow-up review'||q.tpl===(a.type==='Materiality'?'x':a.type))&&q.tiers.includes(a.tier));
+    b=a.type==='Materiality'?`<p style="margin-top:0">Stakeholders rate each topic 1–5 for impact and for financial importance.</p>${TOPICS.map(t=>`<label class="chk"><input type="checkbox" checked><span><b>${esc(t.t)}</b><small>Linked area: ${AREAS[t.area]}</small></span></label>`).join('')}`:
+    `<p style="margin-top:0;color:var(--ink2)">${a.type==='Custom'||a.type==='Follow-up review'?'Pick questions from the bank.':`Starting from the ${a.type} · Tier ${a.tier} template (sample shown).`} Red-flag and evidence questions are required by default.</p>
+    <table class="tbl"><thead><tr><th style="width:30px"></th><th>Question</th><th>Required</th></tr></thead><tbody>${qs.map(q=>`<tr><td><input type="checkbox" ${a.type==='Custom'?'':'checked'}></td><td>${esc(q.t)}<small>${q.area!=null?AREAS[q.area]:'General'}${q.rf?' · red flag':''}</small></td><td><input type="checkbox" ${q.rf||q.ev?'checked':''}></td></tr>`).join('')}</tbody></table>
+    <button class="btn sm ghost" style="margin-top:8px" data-act="toastMsg" data-arg="Supplier preview opens here">Preview as supplier →</button>`;}
+  else if(st===2){const pool=a.type==='Materiality'?SUP:SUP.filter(s=>s.tier===a.tier);
+    b=`<label class="f">Suppliers (${pool.length} in ${a.type==='Materiality'?'all tiers':'Tier '+a.tier})</label>${pool.map(s=>`<label class="chk"><input type="checkbox" data-wsel="${s.id}" ${a.sel.includes(s.id)?'checked':''}><span><b>${esc(s.name)}</b><small>${riskOf(s)||'Not assessed'} risk · ${inr(s.spend)}${ASSIGN.some(x=>x.sid===s.id&&asm(x.aid).type===a.type&&asm(x.aid).period===a.period)?' · already in a '+a.type+' for '+a.period:''}</small></span></label>`).join('')}
+    <div class="row2" style="margin-top:12px"><div class="fld"><label class="f">Due date</label><input class="inp" type="date" data-wa="due" value="${a.due}"></div><div class="fld"><label class="f">Send invitations</label><select class="inp" style="width:100%"><option>Now, when launched</option><option>On a date…</option></select></div></div>
+    <div class="callout">Reminders go out on ${SETTINGS.remind.map(d=>{const x=new Date(a.due+'T00:00:00');x.setDate(x.getDate()-d);return `<b>${fds(x.toISOString().slice(0,10))}</b>`}).join(', ')} to suppliers who haven't submitted. You can add more suppliers later with their own due date.</div>`;}
+  else {const dup=ASSESS.find(x=>x.type===a.type&&x.tier===(a.type==='Materiality'?0:a.tier)&&x.period===a.period&&x.status!=='Closed');
+    b=`${dup?`<div class="callout warn" style="margin-bottom:14px"><b>An assessment like this already exists:</b> ${esc(dup.title)} · ${dup.period} (${dup.status}). <a class="link" href="#/assessments/${dup.id}" data-act="closeDrawer">Add suppliers to it instead</a>, or launch anyway.</div>`:''}
+    <dl class="kv"><dt>Title</dt><dd>${esc(a.title||a.type)}</dd><dt>Type</dt><dd>${a.type}${a.type!=='Materiality'?` · Tier ${a.tier}`:''}</dd><dt>Period</dt><dd>${a.period}</dd><dt>Suppliers</dt><dd>${a.sel.length} selected</dd><dt>Due</dt><dd>${fd(a.due)}</dd><dt>Compared with</dt><dd>${a.type} · ${a.type==='Materiality'?'stakeholders':'Tier '+a.tier} · previous period (automatic)</dd></dl>`;}
+  openDrawer(`<div class="dh"><h2>New assessment</h2>${stepsHtml(names,st)}</div><div class="db">${b}</div><div class="df"><button class="btn" data-act="closeDrawer">Cancel</button><span class="sp"></span>${st>0?`<button class="btn" data-act="aBack">← Back</button>`:''}${st<3?`<button class="btn pri" data-act="aNext">Next →</button>`:`<button class="btn pri" data-act="aLaunch" ${a.sel.length?'':'disabled'}>Launch and invite ${a.sel.length}</button>`}</div>`);
+}
+function notifDrawer(){
+  openDrawer(`<div class="dh"><h2>Notifications</h2></div><div class="db">${NOTIFS.map(n=>`<a href="${n.to}" data-act="closeDrawer" style="display:block;padding:12px 4px;border-bottom:1px solid var(--line)"><b style="font-weight:${n.unread?650:500}">${n.unread?'● ':''}${esc(n.t)}</b><div style="font-size:12.5px;color:var(--ink2)">${esc(n.s)} · ${fd(n.at)}</div></a>`).join('')}</div><div class="df"><button class="btn sm" data-act="readAll">Mark all read</button><span class="sp"></span><button class="btn sm" data-act="toastMsg" data-arg="Daily digest settings in Settings → Reminders & automation">Email me a daily digest</button></div>`);
+}
+
+/* ============ ACTIONS ============ */
+const ACT={
+  closeDrawer:()=>closeDrawer(),
+  toastMsg:a=>toast(a),
+  memenu:(a,el,e)=>{e.stopPropagation();$('#memenu').classList.toggle('open')},
+  importMenu:(a,el,e)=>{e.stopPropagation();$('#importmenu').classList.toggle('open')},
+  signout:()=>toast('Signed out (prototype)'),
+  notif:()=>notifDrawer(),
+  readAll:()=>{NOTIFS.forEach(n=>n.unread=false);notifDrawer();renderSide(cur())},
+  dashTier:a=>{state.dashTier=a;render()},
+  supTier:a=>{state.supFilter.tier=a;render()},
+  supRisk:a=>{state.supFilter.risk=a;render()},
+  sel:a=>{state.sel.has(a)?state.sel.delete(a):state.sel.add(a);render()},
+  selAll:()=>{const r=supRows();if(state.sel.size===r.length)state.sel.clear();else r.forEach(s=>state.sel.add(s.id));render()},
+  bulkInvite:()=>{let n=0;state.sel.forEach(id=>{ASSIGN.filter(x=>x.sid===id&&x.st==='not_invited').forEach(x=>{x.st='invited';x.due=addDays(SETTINGS.onbDays);n++})});state.sel.clear();toast(n?`${n} invitation${n>1?'s':''} sent · due ${fd(addDays(SETTINGS.onbDays))}`:'Everyone selected is already invited');render()},
+  bulkAdd:a=>{const sel=a?[a]:[...state.sel];const tier=sel.length?sup(sel[0]).tier:1;W={step:0,asm:{type:'Annual ESG',tier,period:'2026',title:'',due:addDays(30),sel}};newAssessDrawer()},
+  inviteNotInvited:()=>{let n=0;ASSIGN.filter(x=>x.st==='not_invited').forEach(x=>{x.st='invited';x.due=addDays(SETTINGS.onbDays);n++});toast(`${n} invitations sent · due ${fd(addDays(SETTINGS.onbDays))}`);render()},
+  inviteOne:a=>{const [aid,sid]=a.split('|');const x=ASSIGN.find(y=>y.aid===aid&&y.sid===sid);x.st='invited';x.due=x.due||addDays(SETTINGS.onbDays);toast(`Invitation sent to ${sup(sid).name} · due ${fd(x.due)}`);render()},
+  inviteAll:a=>{let n=0;ASSIGN.filter(x=>x.aid===a&&x.st==='not_invited').forEach(x=>{x.st='invited';x.due=addDays(SETTINGS.onbDays);n++});toast(`${n} invitation${n>1?'s':''} sent`);render()},
+  raiseAction:a=>{const f=FLAGS.find(x=>x.id===a);f.status='Action raised';ACTIONS.push({id:'IA-0'+(ACTIONS.length+1),sid:f.sid,flag:f.id,title:'Resolve: '+f.text,owner:sup(f.sid).contact,due:addDays(30),st:'Open'});toast('Improvement action raised and shared with the supplier');render()},
+  evid:a=>{const [id,st]=a.split('|');EVIDENCE.find(e=>e.id===id).st=st;toast(`Document ${st.toLowerCase()}`);render()},
+  rv:a=>{const p=a.split('|');const k=p.slice(0,3).join('|');REVIEWSTATE[k]=REVIEWSTATE[k]===p[3]?null:p[3];render(true)},
+  toggleThread:a=>{const t=$('#th-'+a);t.style.display=t.style.display==='none'?'':'none';const i=$('#in-'+a);if(i)i.focus()},
+  send:a=>{const p=a.split('|');const k=p.slice(0,3).join('|');const i=$('#in-'+p[3]);if(!i.value.trim())return;(THREADS[k]=THREADS[k]||[]).push({who:'you',name:'Prajal',text:i.value.trim(),at:'2026-11-24'});toast('Question sent; the supplier is emailed and sees it on this answer');render(true)},
+  markReviewed:a=>{const [aid,sid]=a.split('|');ASSIGN.find(x=>x.aid===aid&&x.sid===sid).st='reviewed';toast(`${sup(sid).name} marked reviewed`);location.hash='#/reviews/responses'},
+  sendBack:a=>{const [aid,sid]=a.split('|');ASSIGN.find(x=>x.aid===aid&&x.sid===sid).st='reopened';toast(`Sent back to ${sup(sid).name} with your flags and questions`);location.hash='#/reviews/responses'},
+  actMove:a=>{const [id,st]=a.split('|');ACTIONS.find(x=>x.id===id).st=st;toast(st==='Closed'?'Action approved and closed':'Sent back to supplier');render()},
+  rpArea:a=>{state.rpArea=+a;render()},
+  openAsk:a=>{location.hash=`#/suppliers/${a}/qa`;toast('Open a response and use “Ask supplier” on the answer you have a question about')},
+  addSupplier:()=>{W={step:0,sup:{name:'',contact:'',mobile:'',email:'',spend:'',city:'',cat:'',fac:FACILITIES[0].n,tier:null,due:addDays(SETTINGS.onbDays),annual:false,mat:false,when:'now'}};addSupplierDrawer()},
+  wNext:()=>{if(W.step===1&&!W.sup.tier)return;W.step++;addSupplierDrawer()},
+  wBack:()=>{W.step--;addSupplierDrawer()},
+  wTier:a=>{W.sup.tier=+a;addSupplierDrawer()},
+  wWhen:a=>{W.sup.when=a;addSupplierDrawer()},
+  wFinish:()=>{const s=W.sup;const id='SUP-0'+(16+SUP.length-12);
+    SUP.push({id,name:s.name,tier:s.tier,cat:s.cat,city:s.city||'—',spend:+s.spend,contact:s.contact,email:s.email,fac:s.fac,score:null,areas:null,prev:null,conf:null,comp:null,added:'2026-11-24'});
+    const onb=ASSESS.find(a=>a.type==='Onboarding'&&a.tier===s.tier&&a.status==='Active');const st=s.when==='now'?'invited':'not_invited';
+    ASSIGN.push({aid:onb.id,sid:id,st:s.when==='now'?'invited':'invited',due:s.due,answered:0});
+    if(s.annual){const ann=ASSESS.find(a=>a.type==='Annual ESG'&&a.tier===s.tier&&a.status==='Active');ASSIGN.push({aid:ann.id,sid:id,st:'invited',due:ann.due,answered:0})}
+    closeDrawer();toast(s.when==='now'?`${s.name} added and invited · onboarding due ${fd(s.due)}`:`${s.name} added · invite scheduled`);location.hash=`#/suppliers/${id}/assessments`},
+  newAssess:a=>{W={step:0,asm:{type:a||'Annual ESG',tier:1,period:'2026',title:'',due:addDays(30),sel:[]}};newAssessDrawer()},
+  aType:a=>{W.asm.type=a;W.asm.title='';newAssessDrawer()},
+  aTier:a=>{W.asm.tier=+a;W.asm.title='';W.asm.sel=[];newAssessDrawer()},
+  aNext:()=>{W.step++;newAssessDrawer()},
+  aBack:()=>{W.step--;newAssessDrawer()},
+  aLaunch:()=>{const a=W.asm;const id='A'+(ASSESS.length+1);ASSESS.push({id,title:a.title||`${a.type} Assessment — Tier ${a.tier}`,type:a.type,tier:a.type==='Materiality'?0:a.tier,period:a.period,due:a.due,status:'Active',q:a.type==='Annual ESG'?(a.tier===1?50:25):12,started:'2026-11-24'});
+    if(a.type!=='Materiality') a.sel.forEach(sid=>ASSIGN.push({aid:id,sid,st:'invited',due:a.due,answered:0}));closeDrawer();state.sel.clear();toast(`Launched · ${a.sel.length} invitations sent`);location.hash=a.type==='Materiality'?'#/materiality/survey':`#/assessments/${id}`},
+};
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');
+  if(!t){document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));return}
+  if(t.tagName==='BUTTON') e.preventDefault();
+  const fn=ACT[t.dataset.act];if(fn) fn(t.dataset.arg,t,e);
+  if(t.dataset.act!=='memenu'&&t.dataset.act!=='importMenu') document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.w!=null){W.sup[t.dataset.w]=t.value;const btn=$('#drawer [data-act="wNext"]');if(btn){const s=W.sup;btn.disabled=!(W.step===0?(s.name&&s.contact&&/@/.test(s.email)):(s.spend&&s.cat&&s.tier))}}
+  if(t.dataset.wa!=null){W.asm[t.dataset.wa]=t.value}
+  if(t.dataset.input==='supq'){state.supFilter.q=t.value;const pos=t.selectionStart;render();const n=document.querySelector('[data-input="supq"]');n.focus();n.setSelectionRange(pos,pos)}
+  if(t.dataset.input&&SETTINGS[t.dataset.input]!=null){SETTINGS[t.dataset.input]=+t.value}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.wck){W.sup[t.dataset.wck]=t.checked}
+  if(t.dataset.wsel){const s=W.asm.sel;t.checked?s.push(t.dataset.wsel):s.splice(s.indexOf(t.dataset.wsel),1);const b=$('#drawer [data-act="aLaunch"]');if(b){b.disabled=!s.length;b.textContent=`Launch and invite ${s.length}`}}
+  if(t.dataset.w=='fac'){W.sup.fac=t.value}
+});
+$('#gsearch').addEventListener('keydown',e=>{if(e.key==='Enter'){state.supFilter.q=e.target.value;state.supFilter.tier='all';state.supFilter.risk='all';location.hash='#/suppliers';render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+
+/* Tooltip */
+const tipEl=$('#tip');
+document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(t){tipEl.textContent=t.getAttribute('data-tip');tipEl.style.opacity=1}else tipEl.style.opacity=0});
+document.addEventListener('mousemove',e=>{if(tipEl.style.opacity==='1'){const w=tipEl.offsetWidth;tipEl.style.left=Math.min(e.clientX+14,innerWidth-w-8)+'px';tipEl.style.top=(e.clientY+14)+'px'}});
+
+/* ============ ROUTER ============ */
+function cur(){return (location.hash.slice(2)||'dashboard').split('/')[0]}
+function render(keepScroll){
+  const parts=(location.hash.slice(2)||'dashboard').split('/');let [p,a,b]=parts;
+  const navKey=p==='response'?'reviews':p;
+  renderSide(navKey);
+  const fn=P[p]||P.dashboard;const y=window.scrollY;
+  $('#main').innerHTML=`<div class="page">${fn(a,b)}</div>`;
+  document.title=`${({dashboard:'Dashboard',suppliers:'Suppliers',assessments:'Assessments',reviews:'Reviews',response:'Review response',actions:'Improvement actions',risk:'Risk & performance',materiality:'Materiality',quality:'Data quality',reports:'Reports & exports',questionnaires:'Questionnaires',settings:'Settings'})[p]||'Dashboard'} · Supplier ESG Assessment`;
+  window.scrollTo(0,keepScroll?y:0);
+}
+window.addEventListener('hashchange',()=>{if(!location.hash.startsWith('#/'))return;render()});
+render();
+</script>
+</body>
+</html>

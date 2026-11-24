@@ -1,0 +1,55 @@
+.supplier-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  &__avatar {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-lg);
+    display: grid;
+    place-items: center;
+    background: var(--bg-selected);
+    color: var(--text-brand);
+    font-size: var(--fs-xl);
+    font-weight: 700;
+  }
+
+  .tier {
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: var(--fs-md);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-secondary);
+  }
+}
+
+.qa-thread {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+
+  &__head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    a {
+      margin-left: auto;
+      font-size: var(--fs-md);
+      white-space: nowrap;
+    }
+  }
+}

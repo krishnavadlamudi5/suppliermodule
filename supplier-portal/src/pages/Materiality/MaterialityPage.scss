@@ -1,0 +1,45 @@
+.topic-dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: var(--chart-inactive);
+  color: var(--text-primary);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+
+  &.is-material {
+    background: var(--chart-series-1);
+  }
+}
+
+.topic-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: var(--fs-md);
+
+    .pill {
+      margin-left: auto;
+    }
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+.how-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  line-height: 1.7;
+}

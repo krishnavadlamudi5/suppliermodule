@@ -1,0 +1,48 @@
+// Only what the antd theme can't express. Everything else lives in antdTheme.ts.
+
+.bc-btn.ant-btn {
+  font-size: var(--fs-base);
+  letter-spacing: 0;
+
+  &.ant-btn-sm {
+    font-size: var(--fs-md);
+  }
+
+  // Disabled — one look for every variant (schema §8 "Disabled" row)
+  &:disabled,
+  &.ant-btn-disabled {
+    background: var(--action-disabled-bg);
+    color: var(--action-disabled-text);
+    border-color: var(--border-default);
+  }
+}
+
+.bc-btn--ghost.ant-btn:disabled {
+  background: transparent;
+  border-color: transparent;
+}
+
+// Accept / reject — used on review screens next to each answer and document
+.bc-btn--accept.ant-btn:not(:disabled) {
+  background: var(--status-success-bg);
+  color: var(--status-success-text);
+  border-color: var(--status-success-border);
+
+  &:hover {
+    background: var(--green-100);
+    color: var(--status-success-text);
+    border-color: var(--green-400);
+  }
+}
+
+.bc-btn--reject.ant-btn:not(:disabled) {
+  background: var(--status-error-bg);
+  color: var(--status-error-text);
+  border-color: var(--status-error-border);
+
+  &:hover {
+    background: var(--status-error-bg);
+    color: var(--status-error-text);
+    border-color: var(--status-error-accent);
+  }
+}

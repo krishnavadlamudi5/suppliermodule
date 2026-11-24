@@ -1,0 +1,49 @@
+.page-header {
+  margin-bottom: 18px;
+
+  &__crumbs {
+    margin-bottom: 6px;
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+  }
+
+  &__crumbs a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  &__sep {
+    margin: 0 6px;
+    color: var(--text-disabled);
+  }
+
+  &__row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__text {
+    min-width: 0;
+
+    h1 {
+      font-size: var(--fs-2xl);
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      color: var(--text-heading);
+    }
+
+    p {
+      margin: 4px 0 0;
+      color: var(--text-secondary);
+    }
+  }
+
+  &__actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+}

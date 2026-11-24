@@ -1,0 +1,482 @@
+$sidebar-w: 248px;
+$rail-w: 64px;
+
+.app-shell {
+  display: grid;
+  grid-template-columns: $sidebar-w minmax(0, 1fr);
+  min-height: 100vh;
+
+  &__main {
+    min-width: 0;
+  }
+
+  &__page {
+    padding: var(--space-6) 28px 64px;
+    max-width: 1320px;
+  }
+}
+
+.page-loading {
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+}
+
+/* ---------------- Sidebar ---------------- */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px 12px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+
+  &__brand {
+    display: block;
+    padding: 0 6px 12px;
+
+    img {
+      display: block;
+      height: 52px;
+      width: auto;
+    }
+  }
+
+  /* Client the portal belongs to, shown as a quiet card under the logo */
+  &__org {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 0 2px 4px;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
+  }
+
+  &__org-av {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    flex: none;
+    display: grid;
+    place-items: center;
+    background: var(--action-primary);
+    color: var(--text-on-brand);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+  }
+
+  &__org-text {
+    min-width: 0;
+    b {
+      display: block;
+      font-size: var(--fs-base);
+      color: var(--text-heading);
+    }
+    small {
+      color: var(--text-secondary);
+      font-size: var(--fs-sm);
+    }
+  }
+
+  &__grp {
+    padding: 14px 10px 6px;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    margin-bottom: 1px;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: var(--fw-medium);
+
+    &:hover {
+      background: var(--bg-muted);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    &.is-active {
+      background: var(--bg-selected);
+      color: var(--text-brand);
+      font-weight: var(--fw-semibold);
+    }
+
+    &--quiet {
+      font-size: var(--fs-md);
+      padding: 6px 10px;
+    }
+  }
+
+  &__count {
+    margin-left: auto;
+    min-width: 22px;
+    padding: 1px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--action-primary);
+    color: var(--text-on-brand);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    text-align: center;
+  }
+
+  &__new {
+    margin-left: auto;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--status-info-bg);
+    color: var(--status-info-text);
+    font-size: 10px;
+    font-weight: var(--fw-semibold);
+  }
+
+  &__foot {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  &__powered {
+    padding: 8px 10px 0;
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+
+    b {
+      color: var(--text-secondary);
+      font-weight: var(--fw-semibold);
+    }
+
+    a {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ---------------- Top bar ---------------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 28px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+
+  &__search.ant-input-affix-wrapper {
+    width: 340px;
+    color: var(--text-muted);
+  }
+
+  &__sample {
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--status-warning-border);
+    background: var(--status-warning-bg);
+    color: var(--status-warning-text);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    white-space: nowrap;
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__year {
+    min-width: 150px;
+  }
+
+  &__iconbtn {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--bg-muted);
+      color: var(--text-primary);
+    }
+  }
+
+  &__me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 10px 3px 3px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-pill);
+    background: var(--bg-surface);
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--bg-subtle);
+    }
+  }
+
+  &__me-av {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--bg-selected);
+    color: var(--text-brand);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+  }
+
+  &__me-text {
+    b {
+      display: block;
+      font-size: var(--fs-md);
+      line-height: 1.1;
+    }
+    small {
+      font-size: var(--fs-xs);
+      color: var(--text-secondary);
+    }
+  }
+
+  &__me-caret {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+}
+
+/* ---------------- Responsive: icon rail under 1024px ---------------- */
+@media (max-width: 1024px) {
+  .app-shell {
+    grid-template-columns: $rail-w minmax(0, 1fr);
+
+    &__page {
+      padding: var(--space-5) var(--space-5) 48px;
+    }
+  }
+
+  .app-shell > .sidebar {
+    padding: 12px 8px;
+
+    .sidebar__brand {
+      width: 44px;
+      margin: 0 auto;
+      padding: 0 0 10px;
+      overflow: hidden;
+
+      img {
+        height: 40px;
+        max-width: none;
+      }
+    }
+    .sidebar__org {
+      justify-content: center;
+      margin: 0;
+      padding: 6px 0;
+      border: 0;
+      background: none;
+    }
+    .sidebar__org-text,
+    .sidebar__label,
+    .sidebar__new,
+    .sidebar__powered {
+      display: none;
+    }
+    .sidebar__grp {
+      height: 1px;
+      padding: 0;
+      margin: 10px 6px;
+      background: var(--border-subtle);
+      font-size: 0;
+    }
+    .sidebar__link {
+      justify-content: center;
+      position: relative;
+      padding: 10px 0;
+    }
+    .sidebar__count {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      min-width: 18px;
+      padding: 0 5px;
+      font-size: 10px;
+    }
+  }
+
+  .topbar {
+    padding: 0 var(--space-5);
+
+    &__search.ant-input-affix-wrapper {
+      width: 240px;
+    }
+    &__sample,
+    &__me-text {
+      display: none;
+    }
+  }
+}
+
+/* ---------------- Notifications ---------------- */
+.notif-list {
+  margin: -8px 0 0;
+  padding: 0;
+  list-style: none;
+
+  &__item {
+    display: flex;
+    gap: 10px;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+
+    &:hover {
+      background: var(--bg-brand-subtle);
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    b {
+      display: block;
+      font-weight: var(--fw-medium);
+    }
+    &.is-unread b {
+      font-weight: var(--fw-semibold);
+    }
+    small {
+      display: block;
+      margin-top: 2px;
+      font-size: var(--fs-sm);
+      color: var(--text-secondary);
+    }
+  }
+
+  &__dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-top: 7px;
+    border-radius: 50%;
+    background: var(--action-primary);
+  }
+}
+
+/* ---------------- Keyboard ---------------- */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 200;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--action-primary);
+  color: var(--text-on-brand);
+  font-weight: var(--fw-semibold);
+  transition: top 0.15s;
+
+  &:focus {
+    top: 12px;
+    color: var(--text-on-brand);
+  }
+}
+
+.app-shell__page:focus {
+  outline: none;
+}
+
+/* ---------------- Phone: sidebar becomes a slide-out menu ---------------- */
+.topbar__menu {
+  display: none;
+}
+
+.nav-drawer .ant-drawer-body {
+  padding: 0;
+}
+
+.nav-drawer .sidebar {
+  position: static;
+  height: 100%;
+  border-right: 0;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+
+    > .sidebar {
+      display: none;
+    }
+
+    &__page {
+      padding: var(--space-4) var(--space-4) 40px;
+    }
+  }
+
+  .topbar {
+    gap: 8px;
+    padding: 0 var(--space-3);
+
+    &__menu {
+      display: grid;
+    }
+
+    &__search.ant-input-affix-wrapper {
+      width: auto;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__spacer,
+    &__year {
+      display: none;
+    }
+
+    &__me {
+      padding: 3px;
+    }
+
+    &__me-caret {
+      display: none;
+    }
+  }
+
+  .needs-row,
+  .stat-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page-header__actions {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filter-bar .filter-bar__hint,
+  .filter-bar .filter-bar__end {
+    margin-left: 0;
+  }
+}
