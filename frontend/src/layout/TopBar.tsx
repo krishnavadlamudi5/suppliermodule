@@ -118,6 +118,13 @@ function SearchRow({ title, sub }: { title: string; sub: string }) {
 /** Saving… / Saved / Not saved — so people know their changes reached the database. */
 function SaveStatus() {
   const { saving, saveError } = usePortalSnapshot();
+  // Demo builds run on in-browser sample data: say so instead of "All changes saved"
+  if (import.meta.env.VITE_DATA_SOURCE === 'mock')
+    return (
+      <span className="save-status" role="status" title="Running on built-in sample data. Changes are kept only until the page is reloaded.">
+        Demo mode · changes not saved
+      </span>
+    );
   if (saving > 0)
     return (
       <span className="save-status" role="status">

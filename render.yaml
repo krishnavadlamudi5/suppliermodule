@@ -1,0 +1,21 @@
+# Render Blueprint for the BACKEND (Express API + MongoDB Atlas).
+# Render → New → Blueprint → pick this repository. You'll be asked for the secret values.
+services:
+  - type: web
+    name: supplier-portal-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "24"
+      # Atlas connection string (Atlas → Connect → Drivers). Kept secret by Render.
+      - key: MONGODB_URI
+        sync: false
+      # Your Netlify site address, e.g. https://suppliermodule.netlify.app (comma-separate several)
+      - key: CORS_ORIGIN
+        sync: false

@@ -1,0 +1,34 @@
+# Netlify hosts the FRONTEND only (static site).
+# The backend (Express + MongoDB) must run on a Node host such as Render — see render.yaml.
+
+[build]
+  # Build from the frontend folder; it imports ../shared, which Netlify clones with the repo
+  base = "frontend"
+  command = "npm install && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+  # Demo mode: runs on built-in sample data with no backend (changes aren't saved).
+  # Once the backend is hosted, set VITE_API_URL in Netlify → Site configuration →
+  # Environment variables (e.g. https://supplier-portal-api.onrender.com/api),
+  # delete the line below, and redeploy.
+  VITE_DATA_SOURCE = "mock"
+
+# Single-page app: every route serves index.html so deep links and refreshes work
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
