@@ -3,7 +3,7 @@
  * locally (optimistic update) and hands the same command to the repository,
  * which persists it (in memory today, over HTTP later).
  */
-import { addDays, answerKey, assessmentById } from './selectors';
+import { addDays, answerKey, assessmentById, effectiveDecision } from './selectors';
 import type {
   ActionStatus,
   AssessmentDraft,
@@ -100,10 +100,8 @@ export function applyCommand(d: PortalData, cmd: PortalCommand): PortalData {
 
     case 'toggleReviewDecision': {
       const key = answerKey(cmd.assessmentId, cmd.supplierId, cmd.questionCode);
-      const next = { ...d.reviewDecisions };
-      if (next[key] === cmd.decision) delete next[key];
-      else next[key] = cmd.decision;
-      return { ...d, reviewDecisions: next };
+      const current = effectiveDecision(d, cmd.assessmentId, cmd.supplierId, cmd.questionCode);
+      return { ...d, reviewDecisions: { ...d.reviewDecisions, [key]: current === cmd.decision ? 'cleared' : cmd.decision } };
     }
 
     case 'sendMessage': {

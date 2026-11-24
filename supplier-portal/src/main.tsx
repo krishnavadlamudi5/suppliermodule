@@ -11,6 +11,7 @@ import { PortalProvider } from './state/PortalProvider';
 import { createMockRepository } from './data/mockRepository';
 import { createHttpRepository } from './data/httpRepository';
 import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 if (import.meta.env.DEV) import('./devtools');
 
@@ -21,9 +22,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ConfigProvider theme={antdTheme}>
       <AntApp>
-        <PortalProvider repository={repository}>
-          <App />
-        </PortalProvider>
+        <ErrorBoundary scope="app">
+          <PortalProvider repository={repository}>
+            <App />
+          </PortalProvider>
+        </ErrorBoundary>
       </AntApp>
     </ConfigProvider>
   </StrictMode>,

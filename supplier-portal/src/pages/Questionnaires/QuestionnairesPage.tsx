@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { Input, Select, Table } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { PageHeader } from '../../components/PageHeader/PageHeader';
 import { RouteTabs } from '../../components/RouteTabs/RouteTabs';
 import { Card, CardGrid } from '../../components/Card/Card';
@@ -128,7 +128,7 @@ function BankTab({ data }: { data: PortalData }) {
   return (
     <>
       <FilterBar>
-        <Input.Search allowClear style={{ width: 280 }} placeholder="Search questions or IDs" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search questions" />
+        <Input prefix={<SearchOutlined aria-hidden="true" />} allowClear style={{ width: 280 }} placeholder="Search questions or IDs" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search questions" />
         <Select
           value={section}
           onChange={setSection}

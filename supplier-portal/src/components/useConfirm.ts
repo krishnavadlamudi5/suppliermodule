@@ -20,7 +20,7 @@ export function useConfirm() {
         okText,
         cancelText: 'Cancel',
         okButtonProps: danger ? { danger: true } : undefined,
-        autoFocusButton: 'cancel',
+        focusable: { autoFocusButton: 'cancel' },
         onOk: () => resolve(true),
         onCancel: () => resolve(false),
       });

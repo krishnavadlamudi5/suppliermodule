@@ -15,7 +15,7 @@ import { useToast } from '../../components/useToast';
 import { useConfirm } from '../../components/useConfirm';
 import { usePortal, usePortalActions } from '../../state/hooks';
 import { AREAS, AREA_SHORT, ASSIGNMENT_LABEL } from '../../domain/constants';
-import { answerKey, assessmentById, riskOf, supplierById, threadFor } from '../../domain/selectors';
+import { assessmentById, effectiveDecision, riskOf, supplierById, threadFor } from '../../domain/selectors';
 import type { Assessment, PortalData, Question, Supplier } from '../../domain/types';
 import { sampleAnswer } from '../../data/fixtures/sampleAnswers';
 import { formatDate } from '../../lib/format';
@@ -62,11 +62,7 @@ export default function ResponsePage() {
     );
   }
 
-  const decisionOf = (q: Question) => {
-    const k = answerKey(a.id, s.id, q.code);
-    const flagged = data.flags.some((f) => f.supplierId === s.id && f.assessmentId === a.id && f.questionCode === q.code);
-    return data.reviewDecisions[k] ?? (flagged ? 'flagged' : x.status === 'reviewed' ? 'accepted' : null);
-  };
+  const decisionOf = (q: Question) => effectiveDecision(data, a.id, s.id, q.code);
   const accepted = questions.filter((q) => decisionOf(q) === 'accepted').length;
   const flagged = questions.filter((q) => decisionOf(q) === 'flagged').length;
   const waiting = questions.filter((q) => threadFor(data, a.id, s.id, q.code)?.messages.at(-1)?.from === 'supplier').length;

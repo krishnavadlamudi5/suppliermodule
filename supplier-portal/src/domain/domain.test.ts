@@ -5,6 +5,7 @@ import {
   activeAssignments,
   addDays,
   assessmentProgress,
+  effectiveDecision,
   biggestDrop,
   engageFirst,
   funnelStages,
@@ -125,8 +126,19 @@ describe('commands', () => {
   it('toggles a review decision on and off', () => {
     const cmd = { type: 'toggleReviewDecision', assessmentId: 'A3', supplierId: 'SUP-010', questionCode: 'E-06', decision: 'accepted' } as const;
     const once = applyCommand(d, cmd);
-    expect(once.reviewDecisions['A3|SUP-010|E-06']).toBe('accepted');
-    expect(applyCommand(once, cmd).reviewDecisions['A3|SUP-010|E-06']).toBeUndefined();
+    expect(effectiveDecision(once, 'A3', 'SUP-010', 'E-06')).toBe('accepted');
+    expect(effectiveDecision(applyCommand(once, cmd), 'A3', 'SUP-010', 'E-06')).toBeNull();
+  });
+
+  it('can remove an automatic flag (red flag) and an automatic accept (reviewed response)', () => {
+    // SUP-012 has a red flag on OB-05 in A3, so it starts flagged
+    expect(effectiveDecision(d, 'A3', 'SUP-012', 'OB-05')).toBe('flagged');
+    const unflag = applyCommand(d, { type: 'toggleReviewDecision', assessmentId: 'A3', supplierId: 'SUP-012', questionCode: 'OB-05', decision: 'flagged' });
+    expect(effectiveDecision(unflag, 'A3', 'SUP-012', 'OB-05')).toBeNull();
+    // A3/SUP-008 is already reviewed, so its answers start accepted
+    expect(effectiveDecision(d, 'A3', 'SUP-008', 'E-01')).toBe('accepted');
+    const unaccept = applyCommand(d, { type: 'toggleReviewDecision', assessmentId: 'A3', supplierId: 'SUP-008', questionCode: 'E-01', decision: 'accepted' });
+    expect(effectiveDecision(unaccept, 'A3', 'SUP-008', 'E-01')).toBeNull();
   });
 
   it('answering a supplier question clears it from the inbox', () => {

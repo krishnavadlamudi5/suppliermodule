@@ -41,6 +41,20 @@ export const threadFor = (d: PortalData, assessmentId: string, supplierId: strin
 
 export const isSubmitted = (a: Assignment) => SUBMITTED_STATES.includes(a.status);
 
+/**
+ * The decision shown on an answer: the reviewer's own choice if they made one,
+ * otherwise "flagged" when a red flag was raised on it, or "accepted" when the
+ * whole response has already been reviewed.
+ */
+export function effectiveDecision(d: PortalData, assessmentId: string, supplierId: string, code: string): 'accepted' | 'flagged' | null {
+  const explicit = d.reviewDecisions[answerKey(assessmentId, supplierId, code)];
+  if (explicit === 'cleared') return null;
+  if (explicit) return explicit;
+  if (d.flags.some((f) => f.assessmentId === assessmentId && f.supplierId === supplierId && f.questionCode === code)) return 'flagged';
+  if (d.assignments.some((a) => a.assessmentId === assessmentId && a.supplierId === supplierId && a.status === 'reviewed')) return 'accepted';
+  return null;
+}
+
 /* ---------------- Scores, maturity, risk ---------------- */
 
 /** Maturity level index (0 = Nascent … 4 = Transformative), or null if unscored. */

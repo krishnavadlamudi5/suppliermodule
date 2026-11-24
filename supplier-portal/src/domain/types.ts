@@ -213,8 +213,11 @@ export interface PortalData {
   notifications: Notification[];
   qualityChecks: QualityCheck[];
   reports: ReportDefinition[];
-  /** Reviewer decisions per answer, keyed by answerKey() */
-  reviewDecisions: Record<string, ReviewDecision>;
+  /**
+   * Reviewer decisions per answer, keyed by answerKey(). `cleared` means the reviewer
+   * removed an automatic decision (red flag or reviewed response) — see effectiveDecision().
+   */
+  reviewDecisions: Record<string, ReviewDecision | 'cleared'>;
   /** Last year's maturity counts per tier (Nascent → Transformative) */
   previousMaturity: Record<Tier, number[]>;
   /** Year-on-year change in average area score (one per area) */

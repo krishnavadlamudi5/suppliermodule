@@ -9,6 +9,7 @@ import { usePortal, usePortalActions } from '../state/hooks';
 import { reviewInboxCount } from '../domain/selectors';
 import { PAGE_TITLES } from '../app/nav';
 import { DrawerHost } from '../features/drawers/DrawerHost';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import './AppLayout.scss';
 
 export function AppLayout() {
@@ -72,7 +73,10 @@ export function AppLayout() {
           onOpenMenu={() => setMenuOpen(true)}
         />
         <main className="app-shell__page" id="main" ref={mainRef} tabIndex={-1}>
-          <Outlet />
+          {/* keyed by path: going to another page clears a crash */}
+          <ErrorBoundary key={pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
       <ChartTooltip />

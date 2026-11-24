@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Dropdown, Input, Segmented, Table } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { DownOutlined, PlusOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { PageHeader } from '../../components/PageHeader/PageHeader';
 import { Button } from '../../components/Button/Button';
 import { Callout } from '../../components/Callout/Callout';
@@ -141,7 +141,7 @@ export default function SuppliersPage() {
       )}
 
       <FilterBar>
-        <Input.Search
+        <Input prefix={<SearchOutlined aria-hidden="true" />}
           allowClear
           style={{ width: 260 }}
           placeholder="Search name, category, city"
