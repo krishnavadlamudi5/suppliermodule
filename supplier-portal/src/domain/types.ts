@@ -1,6 +1,9 @@
 /** Domain model for the Supplier ESG portal. Dates are ISO strings (YYYY-MM-DD). */
 
 export type ISODate = string;
+
+/** Visual tone for a status (rendered by the Pill component). */
+export type StatusTone = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'brand';
 export type Tier = 1 | 2;
 
 export interface Supplier {

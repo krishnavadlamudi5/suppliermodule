@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import './Pill.scss';
 
-export type PillTone = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'brand';
+import type { StatusTone } from '../../domain/types';
+
+export type PillTone = StatusTone;
 
 export function Pill({ tone = 'neutral', children, title }: { tone?: PillTone; children: ReactNode; title?: string }) {
   return (

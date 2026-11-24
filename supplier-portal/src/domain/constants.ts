@@ -1,5 +1,4 @@
-import type { AssignmentStatus, FlagCause } from './types';
-import type { PillTone } from '../components/Pill/Pill';
+import type { AssignmentStatus, FlagCause, StatusTone } from './types';
 
 /** The 7 scoring areas, in methodology order. Area scores are indexed by this list. */
 export const AREAS = [
@@ -67,7 +66,7 @@ export const ASSIGNMENT_LABEL: Record<AssignmentStatus, string> = {
   reopened: 'Reopened',
 };
 
-export const ASSIGNMENT_TONE: Record<AssignmentStatus, PillTone> = {
+export const ASSIGNMENT_TONE: Record<AssignmentStatus, StatusTone> = {
   not_invited: 'warning',
   invited: 'neutral',
   in_progress: 'info',

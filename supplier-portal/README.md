@@ -5,9 +5,27 @@ in the Bharat Carbon color schema.
 
 ```
 npm install
-npm run dev      # regenerates tokens, then starts Vite on :5173
+npm run dev        # API (MongoDB) on :8787 + web app on :5173
+npm run dev:mock   # web app only, in-browser sample data, no database
+npm run db:reset   # wipe the database and reseed it with the sample data
 npm run build
 ```
+
+## Database (MongoDB Atlas)
+
+The web app never talks to MongoDB directly — that would expose the password to
+every browser. `server/index.ts` is a small Express API that holds the connection:
+
+- Credentials live in `server/.env` (git-ignored). Copy `server/.env.example` to create it.
+- Database `supplier_portal`: one collection per list (suppliers, assessments, assignments,
+  flags, evidence, threads, actions, …) plus a `programme` document for settings.
+  An empty database seeds itself with the sample data on first start.
+- `GET /api/programme` returns everything; `POST /api/commands` applies one change using the
+  same reducer as the front end (`src/domain/commands.ts`) and saves it in a transaction.
+- Atlas only accepts connections from allowed IPs: if the API times out on start, add this
+  machine's public IP under **Network Access** in Atlas.
+- The API listens on 127.0.0.1 only and has **no authentication yet** — add auth before
+  deploying it anywhere.
 
 ## Design tokens
 
@@ -36,9 +54,8 @@ src/state/                 PortalStore (optimistic updates + rollback) and React
 Screens read with `usePortal()` and change things with `usePortalActions()`
 (`invite`, `raiseAction`, `setEvidenceStatus`, `addSupplier`, `launchAssessment`, …).
 
-**Connecting a backend:** write an HTTP `PortalRepository` (GET the programme in `load`,
-map each `PortalCommand` type to an endpoint in `execute`) and pass it to `PortalProvider`
-in `main.tsx`. Nothing else changes.
+**Data sources:** `createHttpRepository()` (the MongoDB API, default) or `createMockRepository()`
+(in-browser sample data, `npm run dev:mock`), chosen in `main.tsx`.
 
 ```
 npm test         # selector, command and store tests (vitest)

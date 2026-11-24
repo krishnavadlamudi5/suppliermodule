@@ -15,3 +15,7 @@ dist-ssr/
 Thumbs.db
 .idea/
 *.log
+
+# Placeholder env files are safe to commit
+!.env.example
+!.env.mock

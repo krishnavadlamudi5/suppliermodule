@@ -9,12 +9,13 @@ import './styles/global.scss';
 import { antdTheme } from './theme/antdTheme';
 import { PortalProvider } from './state/PortalProvider';
 import { createMockRepository } from './data/mockRepository';
+import { createHttpRepository } from './data/httpRepository';
 import App from './App';
 
 if (import.meta.env.DEV) import('./devtools');
 
-// Swap for an HTTP repository when the backend is ready.
-const repository = createMockRepository({ latency: 150 });
+// MongoDB-backed API by default. Set VITE_DATA_SOURCE=mock to run on in-browser sample data.
+const repository = import.meta.env.VITE_DATA_SOURCE === 'mock' ? createMockRepository({ latency: 150 }) : createHttpRepository();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
