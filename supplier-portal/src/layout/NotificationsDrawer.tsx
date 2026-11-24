@@ -35,7 +35,7 @@ export function NotificationsDrawer({ open, items, onClose, onReadAll, onRead }:
       }
     >
       {items.length === 0 ? (
-        <EmptyState>You're all caught up.</EmptyState>
+        <EmptyState>No new notifications.</EmptyState>
       ) : (
         <ul className="notif-list">
           {items.map((n) => (

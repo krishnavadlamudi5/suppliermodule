@@ -21,11 +21,11 @@ export default function QualityPage() {
 
   return (
     <>
-      <PageHeader title="Data quality" subtitle="How far the scores can be relied on" />
+      <PageHeader title="Data Assurance" subtitle="Reliability of supplier-reported ESG data, based on evidence verification, completeness, traceability, coverage and timeliness" />
       <CardGrid cols={2}>
         <Card
-          title={`${low.length} supplier${low.length === 1 ? ' has' : 's have'} low data confidence (below ${RISK_RULES.confidenceMedium}%)`}
-          question={`Data confidence by supplier, lowest first. Dashed lines = Medium (${RISK_RULES.confidenceMedium}) and High (${RISK_RULES.confidenceHigh}) bands.`}
+          title="Supplier Data Confidence"
+          question={`${low.length} ${low.length === 1 ? 'supplier falls' : 'suppliers fall'} below the ${RISK_RULES.confidenceMedium}% confidence threshold. Ranked lowest first; reference lines mark the Medium (${RISK_RULES.confidenceMedium}%) and High (${RISK_RULES.confidenceHigh}%) bands.`}
         >
           <ChartFigure table={{ columns: ['Supplier', 'Confidence', 'Band'], numeric: [1], rows: list.map((s) => [s.name, `${s.confidence}%`, band(s.confidence ?? 0)]) }}>
             <HBarChart
@@ -46,10 +46,10 @@ export default function QualityPage() {
           </ChartFigure>
         </Card>
         <Card
-          title={`${weakest?.name ?? 'Verification'} holds confidence back most`}
-          question="Average result of each check across suppliers · weight in brackets"
-          footnote={`${pending} document${pending === 1 ? '' : 's'} waiting to be verified`}
-          footerLink={{ to: '/reviews/evidence', label: 'Verify in Reviews' }}
+          title="Confidence Score Drivers"
+          question={`${weakest?.name ?? 'Verification'} has the greatest adverse effect on data confidence. Average result per check across suppliers; weighting shown in brackets.`}
+          footnote={`${pending} ${pending === 1 ? 'document' : 'documents'} awaiting verification`}
+          footerLink={{ to: '/reviews/evidence', label: 'Verify evidence' }}
         >
           <ChartFigure table={{ columns: ['Check', 'What it measures', 'Weight', 'Average'], numeric: [2, 3], rows: checks.map((c) => [c.name, c.detail, `${c.weight}%`, `${c.average}%`]) }}>
             <HBarChart
@@ -65,7 +65,7 @@ export default function QualityPage() {
               ariaLabel="Confidence checks"
             />
           </ChartFigure>
-          <p className="form-field__hint">Confidence = {checks.map((c) => `${c.weight}% ${c.name.toLowerCase()}`).join(' + ')}.</p>
+          <p className="form-field__hint">Data confidence = {checks.map((c) => `${c.weight}% ${c.name.toLowerCase()}`).join(' + ')}.</p>
         </Card>
       </CardGrid>
     </>

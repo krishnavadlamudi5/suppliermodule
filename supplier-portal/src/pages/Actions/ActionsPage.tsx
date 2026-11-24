@@ -24,11 +24,11 @@ export default function ActionsPage() {
   return (
     <>
       <PageHeader
-        title="Improvement actions"
-        subtitle="Raised from red flags and low scores; each one is tracked into next year's score"
+        title="Corrective Actions"
+        subtitle="Corrective and improvement actions arising from critical findings and performance gaps; progress is reflected in the next assessment cycle"
         actions={
           <Button variant="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
-            New action
+            New Corrective Action
           </Button>
         }
       />
@@ -41,7 +41,7 @@ export default function ActionsPage() {
                 {col}
                 <span>{items.length}</span>
               </h2>
-              {items.length ? items.map((a) => <ActionCard key={a.id} data={data} a={a} />) : <EmptyState>None</EmptyState>}
+              {items.length ? items.map((a) => <ActionCard key={a.id} data={data} a={a} />) : <EmptyState>No actions</EmptyState>}
             </section>
           );
         })}
@@ -86,10 +86,10 @@ function ActionCard({ data, a }: { data: PortalData; a: ImprovementAction }) {
       </div>
       {a.status === 'Awaiting approval' && (
         <div className="action-card__buttons">
-          <Button size="sm" variant="accept" onClick={() => move('Closed', 'Action approved and closed')}>
-            Approve & close
+          <Button size="sm" variant="accept" onClick={() => move('Closed', 'Action verified and closed')}>
+            Verify & Close
           </Button>
-          <Button size="sm" onClick={() => move('In progress', 'Sent back to supplier')}>
+          <Button size="sm" onClick={() => move('In progress', 'Returned to supplier for further work')}>
             Send back
           </Button>
         </div>
@@ -111,7 +111,7 @@ function NewActionModal({ open, onClose }: { open: boolean; onClose: () => void 
   const submit = async () => {
     if (!supplierId) return;
     await createAction({ supplierId, title, owner: owner || supplierById(data, supplierId)?.contact || '', dueDate: due });
-    toast.success('Improvement action created');
+    toast.success('Corrective action created');
     setSupplierId(undefined);
     setTitle('');
     setOwner('');
@@ -119,7 +119,7 @@ function NewActionModal({ open, onClose }: { open: boolean; onClose: () => void 
   };
 
   return (
-    <Modal open={open} onCancel={onClose} title="New improvement action" okText="Create action" okButtonProps={{ disabled: !ok }} onOk={submit} destroyOnHidden>
+    <Modal open={open} onCancel={onClose} title="New Corrective Action" okText="Create Action" okButtonProps={{ disabled: !ok }} onOk={submit} destroyOnHidden>
       <FormField label="Supplier *" htmlFor="na-sup">
         <Select
           id="na-sup"
@@ -135,14 +135,14 @@ function NewActionModal({ open, onClose }: { open: boolean; onClose: () => void 
           options={data.suppliers.map((s) => ({ value: s.id, label: s.name }))}
         />
       </FormField>
-      <FormField label="What needs to happen *" htmlFor="na-title">
-        <Input id="na-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Publish a Scope 3 reduction plan" />
+      <FormField label="Required action *" htmlFor="na-title">
+        <Input id="na-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Publish a Scope 3 emissions reduction plan" />
       </FormField>
       <div className="form-row">
-        <FormField label="Owner at the supplier" htmlFor="na-owner">
+        <FormField label="Supplier action owner" htmlFor="na-owner">
           <Input id="na-owner" value={owner} onChange={(e) => setOwner(e.target.value)} />
         </FormField>
-        <FormField label="Due date" htmlFor="na-due">
+        <FormField label="Target completion date" htmlFor="na-due">
           <Input id="na-due" type="date" min={data.asOf} value={due} onChange={(e) => setDue(e.target.value)} />
         </FormField>
       </div>

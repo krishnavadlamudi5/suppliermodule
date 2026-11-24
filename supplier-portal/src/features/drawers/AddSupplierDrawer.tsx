@@ -66,7 +66,7 @@ export function AddSupplierDrawer({ open, onClose }: { open: boolean; onClose: (
     <SideDrawer
       open={open}
       onClose={onClose}
-      title="Add supplier"
+      title="Onboard Supplier"
       steps={STEPS}
       step={step}
       footer={
@@ -80,7 +80,7 @@ export function AddSupplierDrawer({ open, onClose }: { open: boolean; onClose: (
             </Button>
           ) : (
             <Button variant="primary" loading={busy} onClick={finish}>
-              {s.sendNow ? 'Add and send invite' : 'Add without inviting'}
+              {s.sendNow ? 'Onboard & Invite' : 'Register Supplier'}
             </Button>
           )}
         </>
@@ -126,7 +126,7 @@ export function AddSupplierDrawer({ open, onClose }: { open: boolean; onClose: (
               <Input id="as-city" value={s.city} onChange={(e) => set('city', e.target.value)} />
             </FormField>
           </div>
-          <FormField label="Products or services supplied *" htmlFor="as-cat">
+          <FormField label="Goods / services supplied *" htmlFor="as-cat">
             <Input id="as-cat" value={s.category} onChange={(e) => set('category', e.target.value)} placeholder="e.g. Process chemicals" />
           </FormField>
           <FormField label="Facility it supplies" htmlFor="as-fac">
@@ -151,7 +151,7 @@ export function AddSupplierDrawer({ open, onClose }: { open: boolean; onClose: (
               options={[1, 2].map((t) => ({
                 value: t as Tier,
                 title: `Tier ${t}${t === suggested ? ' · suggested' : ''}`,
-                detail: t === 1 ? 'Critical: onboarding (10) + annual ESG (50)' : 'Other: onboarding (5) + annual ESG (25)',
+                detail: t === 1 ? 'Critical supplier: onboarding (10) + Annual ESG (50)' : 'Standard supplier: onboarding (5) + Annual ESG (25)',
               }))}
             />
           </FormField>
@@ -231,8 +231,8 @@ export function AddSupplierDrawer({ open, onClose }: { open: boolean; onClose: (
                 value={s.sendNow ? 'now' : 'later'}
                 onChange={(v) => set('sendNow', v === 'now')}
                 options={[
-                  { value: 'now', title: 'Invite now', detail: 'Email goes out immediately' },
-                  { value: 'later', title: 'Not yet', detail: 'Add now, invite later from the list' },
+                  { value: 'now', title: 'Issue invitation now', detail: 'The supplier is invited immediately' },
+                  { value: 'later', title: 'Defer invitation', detail: 'Register now; invite later from the Supplier Register' },
                 ]}
               />
             </div>

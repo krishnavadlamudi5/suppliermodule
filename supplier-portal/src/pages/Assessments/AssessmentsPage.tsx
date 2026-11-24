@@ -79,7 +79,7 @@ export default function AssessmentsPage() {
       ),
     },
     {
-      title: 'Avg score',
+      title: 'Avg. ESG score',
       key: 'avg',
       align: 'right',
       render: (_, a) => {
@@ -87,18 +87,18 @@ export default function AssessmentsPage() {
         return <span className="tabular">{v != null ? Math.round(v) : '—'}</span>;
       },
     },
-    { title: 'Red flags', key: 'flags', align: 'right', render: (_, a) => <span className="tabular">{assessmentProgress(data, a).openFlags || '—'}</span> },
+    { title: 'Critical findings', key: 'flags', align: 'right', render: (_, a) => <span className="tabular">{assessmentProgress(data, a).openFlags || '—'}</span> },
     { title: <span className="sr-only">Actions</span>, key: 'open', align: 'right', render: (_, a) => <Link to={assessmentHref(a)}>Open</Link> },
   ];
 
   return (
     <>
       <PageHeader
-        title="Assessments"
-        subtitle="Each assessment sends one questionnaire to the suppliers you choose, with one due date"
+        title="ESG Assessments"
+        subtitle="Onboarding due diligence, annual ESG assessments and materiality consultations across the supplier programme"
         actions={
           <Button variant="primary" icon={<PlusOutlined />} onClick={() => openNewAssessment()}>
-            New assessment
+            Launch Assessment
           </Button>
         }
       />
@@ -114,7 +114,7 @@ export default function AssessmentsPage() {
       <Legend
         items={[
           { label: 'Reviewed', color: color('chart-series-1') },
-          { label: 'Submitted, awaiting review', color: color('chart-series-2') },
+          { label: 'Submitted, under review', color: color('chart-series-2') },
         ]}
       />
       <Table<Assessment>
@@ -124,7 +124,7 @@ export default function AssessmentsPage() {
         pagination={false}
         columns={columns}
         dataSource={list}
-        locale={{ emptyText: <EmptyState>Nothing here yet.</EmptyState> }}
+        locale={{ emptyText: <EmptyState>No assessments in this category.</EmptyState> }}
         scroll={{ x: 900 }}
       />
     </>

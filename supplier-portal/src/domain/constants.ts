@@ -70,9 +70,9 @@ export const ASSIGNMENT_LABEL: Record<AssignmentStatus, string> = {
   not_invited: 'Not invited',
   invited: 'Invited',
   in_progress: 'In progress',
-  submitted: 'Awaiting review',
+  submitted: 'Under review',
   reviewed: 'Reviewed',
-  reopened: 'Reopened',
+  reopened: 'Returned for revision',
 };
 
 export const ASSIGNMENT_TONE: Record<AssignmentStatus, StatusTone> = {

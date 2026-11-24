@@ -103,10 +103,10 @@ export default function SupplierProfilePage() {
         tabs={[
           { key: 'overview', label: 'Overview' },
           { key: 'assessments', label: 'Assessments', count: assigns.length },
-          { key: 'evidence', label: 'Answers & evidence' },
-          { key: 'flags', label: 'Red flags & actions', count: flags.length + actions.length },
-          { key: 'qa', label: 'Q&A', count: threads.length },
-          { key: 'activity', label: 'Activity' },
+          { key: 'evidence', label: 'Evidence' },
+          { key: 'flags', label: 'Findings & Actions', count: flags.length + actions.length },
+          { key: 'qa', label: 'Clarifications', count: threads.length },
+          { key: 'activity', label: 'Audit Trail' },
         ]}
       />
 
@@ -134,20 +134,20 @@ function Overview({ data, s }: { data: PortalData; s: Supplier }) {
     <>
       <div className="stat-row">
         <StatTile
-          label="Basic compliance"
+          label="Compliance rate"
           value={s.compliance != null ? `${s.compliance}%` : '—'}
           bar={{ pct: s.compliance ?? 0, color: (s.compliance ?? 0) < 100 ? color('status-warning-accent') : color('chart-series-1') }}
-          note="Permits and red-flag checks passed"
+          note="Statutory and critical compliance checks passed"
         />
-        <StatTile label="ESG performance" value={s.score ?? '—'} suffix=" /100">
+        <StatTile label="ESG performance score" value={s.score ?? '—'} suffix=" /100">
           <div style={{ marginTop: 6 }}>
             <MaturityPill score={s.score} />
           </div>
         </StatTile>
         <StatTile
-          label="Year on year"
+          label="Change vs 2025"
           value={yoy == null ? '—' : `${yoy >= 0 ? '+' : '−'}${Math.abs(yoy)}`}
-          note={s.previousScore != null ? `2025 score ${s.previousScore}` : 'Baseline year'}
+          note={s.previousScore != null ? `2025 baseline: ${s.previousScore}` : 'Baseline assessment year'}
         />
         <StatTile
           label="Data confidence"
@@ -157,7 +157,7 @@ function Overview({ data, s }: { data: PortalData; s: Supplier }) {
             conf == null
               ? 'No evidence yet'
               : conf < RISK_RULES.confidenceMedium
-                ? 'Low · scores lean on unverified claims'
+                ? 'Low · scores rely largely on unverified disclosures'
                 : conf < RISK_RULES.confidenceHigh
                   ? 'Medium'
                   : 'High'
@@ -167,8 +167,8 @@ function Overview({ data, s }: { data: PortalData; s: Supplier }) {
 
       <CardGrid cols={2}>
         <Card
-          title={sw ? `Strongest in ${AREAS[sw.strongest]}, weakest in ${AREAS[sw.weakest]}` : 'No scored annual assessment yet'}
-          question={`Score by area · black tick = Tier ${s.tier} average`}
+          title="Performance by Impact Area"
+          question={sw ? `Strongest: ${AREAS[sw.strongest]}. Priority for improvement: ${AREAS[sw.weakest]}. Marker shows the Tier ${s.tier} average.` : 'No scored Annual ESG Assessment on record.'}
         >
           {s.areaScores ? (
             <ChartFigure
@@ -197,11 +197,11 @@ function Overview({ data, s }: { data: PortalData; s: Supplier }) {
               />
             </ChartFigure>
           ) : (
-            <EmptyState>Scores appear after the first Annual ESG Assessment is submitted.</EmptyState>
+            <EmptyState>Impact-area scores are published once the first Annual ESG Assessment is submitted and reviewed.</EmptyState>
           )}
         </Card>
 
-        <Card title="Red flags and compliance" question="A check passes only with accepted evidence">
+        <Card title="Compliance Status" question="A compliance check is passed only on verified evidence">
           {flags.length ? (
             flags.map((f) => (
               <ListRow
@@ -212,15 +212,15 @@ function Overview({ data, s }: { data: PortalData; s: Supplier }) {
               />
             ))
           ) : (
-            <EmptyState>No red flags.</EmptyState>
+            <EmptyState>No critical findings on record.</EmptyState>
           )}
           <div style={{ marginTop: 14 }}>
             <KeyValue
               items={[
                 ['Contact', `${s.contact} · ${s.email}`],
                 ['Facility', s.facility],
-                ['Products / services', s.category],
-                ['Added', formatDate(s.addedOn)],
+                ['Goods / services supplied', s.category],
+                ['Onboarded to programme', formatDate(s.addedOn)],
               ]}
             />
           </div>
@@ -288,7 +288,7 @@ function AssessmentsTab({ data, s, assigns }: { data: PortalData; s: Supplier; a
       pagination={false}
       columns={columns}
       dataSource={assigns}
-      locale={{ emptyText: <EmptyState>Not in any assessment yet.</EmptyState> }}
+      locale={{ emptyText: <EmptyState>Not yet enrolled in an assessment.</EmptyState> }}
     />
   );
 }
@@ -300,12 +300,12 @@ function EvidenceTab({ data, s, assigns }: { data: PortalData; s: Supplier; assi
   const latest = assigns.filter(isSubmitted).sort((a, b) => (b.submittedOn ?? '').localeCompare(a.submittedOn ?? ''))[0];
   return (
     <Card
-      title="Documents and answers"
-      question="Evidence uploaded with each assessment. Review it on the response page, next to the answer it supports."
+      title="Evidence Register"
+      question="Supporting documentation submitted with each assessment. Verify each item against the disclosure it supports."
       extra={
         latest && (
           <Link to={`/response/${latest.assessmentId}/${s.id}`}>
-            <Button size="sm">Open latest response →</Button>
+            <Button size="sm">View latest submission →</Button>
           </Link>
         )
       }
@@ -326,7 +326,7 @@ function EvidenceTab({ data, s, assigns }: { data: PortalData; s: Supplier; assi
           />
         ))
       ) : (
-        <EmptyState>No documents uploaded yet.</EmptyState>
+        <EmptyState>No supporting evidence submitted yet.</EmptyState>
       )}
     </Card>
   );
@@ -341,7 +341,7 @@ function FlagsTab({ data, s }: { data: PortalData; s: Supplier }) {
   const actions = data.actions.filter((a) => a.supplierId === s.id);
   return (
     <CardGrid cols={2}>
-      <Card title="Red flags" question="Each red flag links to its improvement action">
+      <Card title="Critical Findings" question="Each finding is linked to its corrective action plan">
         {flags.length ? (
           flags.map((f) => (
             <ListRow
@@ -365,14 +365,14 @@ function FlagsTab({ data, s }: { data: PortalData; s: Supplier }) {
             />
           ))
         ) : (
-          <EmptyState>No red flags.</EmptyState>
+          <EmptyState>No critical findings on record.</EmptyState>
         )}
       </Card>
-      <Card title="Improvement actions" question="Tracked into next year's score" footerLink={{ to: '/actions', label: 'Open the action board' }}>
+      <Card title="Corrective Actions" question="Progress is reflected in the next assessment cycle" footerLink={{ to: '/actions', label: 'View corrective actions' }}>
         {actions.length ? (
           actions.map((a) => <ListRow key={a.id} title={a.title} meta={`${a.status} · due ${formatDate(a.dueDate)} · owner ${a.owner}`} />)
         ) : (
-          <EmptyState>No actions.</EmptyState>
+          <EmptyState>No corrective actions on record.</EmptyState>
         )}
       </Card>
     </CardGrid>
@@ -384,7 +384,7 @@ function FlagsTab({ data, s }: { data: PortalData; s: Supplier }) {
 function QaTab({ data, s }: { data: PortalData; s: Supplier }) {
   const threads = data.threads.filter((t) => t.supplierId === s.id);
   return (
-    <Card title="Questions and answers" question="Every thread with this supplier, on any answer">
+    <Card title="Clarification Log" question="All clarification requests exchanged with this supplier">
       {threads.length ? (
         threads.map((t) => {
           const q = data.questions.find((x) => x.code === t.questionCode);
@@ -392,14 +392,14 @@ function QaTab({ data, s }: { data: PortalData; s: Supplier }) {
             <div key={`${t.assessmentId}|${t.questionCode}`} className="qa-thread">
               <div className="qa-thread__head">
                 <b>{q?.text ?? t.questionCode}</b>
-                <Link to={`/response/${t.assessmentId}/${s.id}`}>Open in response →</Link>
+                <Link to={`/response/${t.assessmentId}/${s.id}`}>View in submission →</Link>
               </div>
               <MessageList messages={t.messages} />
             </div>
           );
         })
       ) : (
-        <EmptyState>No questions yet. Ask one from any answer on the response page.</EmptyState>
+        <EmptyState>No clarification requests on record. Raise one against any disclosure in the submission review.</EmptyState>
       )}
     </Card>
   );
@@ -408,14 +408,14 @@ function QaTab({ data, s }: { data: PortalData; s: Supplier }) {
 /* ---------------- Activity ---------------- */
 
 function ActivityTab({ data, s, assigns }: { data: PortalData; s: Supplier; assigns: Assignment[] }) {
-  const events: { at: string; title: string }[] = [{ at: s.addedOn, title: 'Supplier added' }];
+  const events: { at: string; title: string }[] = [{ at: s.addedOn, title: 'Onboarded to supplier programme' }];
   assigns.forEach((x) => {
     const a = assessmentById(data, x.assessmentId);
     if (x.submittedOn) events.push({ at: x.submittedOn, title: `Submitted · ${a?.title}` });
     if (x.status !== 'not_invited' && a?.startedOn) events.push({ at: a.startedOn, title: `Invited · ${a.title}` });
     if (x.status === 'reviewed' || x.status === 'reopened') events.push({ at: x.submittedOn ?? data.asOf, title: `${ASSIGNMENT_LABEL[x.status]} · ${a?.title}` });
   });
-  data.flags.filter((f) => f.supplierId === s.id).forEach((f) => events.push({ at: f.raisedOn, title: `Red flag raised: ${f.text}` }));
+  data.flags.filter((f) => f.supplierId === s.id).forEach((f) => events.push({ at: f.raisedOn, title: `Critical finding raised: ${f.text}` }));
   events.sort((a, b) => b.at.localeCompare(a.at));
   return (
     <Card>

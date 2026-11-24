@@ -83,7 +83,7 @@ export default function SuppliersPage() {
       render: (_, s) => <span className="tabular">{formatInr(s.spend)}</span>,
     },
     {
-      title: 'Onboarding',
+      title: 'Onboarding status',
       key: 'onb',
       render: (_, s) => {
         const o = onboardingAssignment(data, s.id);
@@ -91,16 +91,16 @@ export default function SuppliersPage() {
       },
     },
     { title: 'ESG score', key: 'score', align: 'right', sorter: (a, b) => (a.score ?? -1) - (b.score ?? -1), render: (_, s) => <span className="tabular">{s.score ?? '—'}</span> },
-    { title: 'Maturity', key: 'mat', render: (_, s) => <MaturityPill score={s.score} /> },
-    { title: 'Risk', key: 'risk', render: (_, s) => <RiskBadge level={riskOf(data, s)} /> },
-    { title: 'Open items', key: 'open', align: 'right', render: (_, s) => <span className="tabular">{openItemCount(data, s.id) || '—'}</span> },
+    { title: 'ESG maturity', key: 'mat', render: (_, s) => <MaturityPill score={s.score} /> },
+    { title: 'Risk rating', key: 'risk', render: (_, s) => <RiskBadge level={riskOf(data, s)} /> },
+    { title: 'Open issues', key: 'open', align: 'right', render: (_, s) => <span className="tabular">{openItemCount(data, s.id) || '—'}</span> },
   ];
 
   return (
     <>
       <PageHeader
-        title="Suppliers"
-        subtitle={`${data.suppliers.length} suppliers · ${t1} in Tier 1 · ${data.suppliers.length - t1} in Tier 2`}
+        title="Supplier Register"
+        subtitle={`${data.suppliers.length} suppliers under ESG due diligence · ${t1} Tier 1 (critical) · ${data.suppliers.length - t1} Tier 2`}
         actions={
           <>
             <Dropdown
@@ -128,14 +128,14 @@ export default function SuppliersPage() {
         <div style={{ marginBottom: 14 }}>
           <Callout
             tone="warning"
-            title={`${neverInvited.length} supplier${neverInvited.length > 1 ? 's were' : ' was'} added but never invited to onboarding.`}
+            title={`${neverInvited.length} ${neverInvited.length > 1 ? 'suppliers are' : 'supplier is'} pending onboarding invitation.`}
             action={
               <Button size="sm" variant="primary" onClick={inviteNeverInvited}>
                 Invite {neverInvited.length} now
               </Button>
             }
           >
-            They won't hear from you until you invite them.
+            Onboarding due diligence cannot begin until the invitation is issued.
           </Callout>
         </div>
       )}
@@ -144,7 +144,7 @@ export default function SuppliersPage() {
         <Input prefix={<SearchOutlined aria-hidden="true" />}
           allowClear
           style={{ width: 260 }}
-          placeholder="Search name, category, city"
+          placeholder="Search by supplier, category or location"
           value={q}
           onChange={(e) => setFilter('q', e.target.value)}
           aria-label="Search suppliers"
@@ -162,7 +162,7 @@ export default function SuppliersPage() {
           value={risk}
           onChange={(v) => setFilter('risk', v)}
           options={[
-            { value: 'all', label: 'Any risk' },
+            { value: 'all', label: 'All risk levels' },
             { value: 'High', label: 'High' },
             { value: 'Medium', label: 'Medium' },
             { value: 'Low', label: 'Low' },
@@ -191,7 +191,7 @@ export default function SuppliersPage() {
         columns={columns}
         dataSource={rows}
         rowSelection={{ selectedRowKeys: selected, onChange: (keys) => setSelected(keys as string[]) }}
-        locale={{ emptyText: <EmptyState>No suppliers match these filters.</EmptyState> }}
+        locale={{ emptyText: <EmptyState>No suppliers match the selected criteria.</EmptyState> }}
       />
       </div>
     </>

@@ -22,16 +22,16 @@ export default function SettingsPage() {
   if (!(TABS as readonly string[]).includes(tab)) return <Navigate to="/settings/org" replace />;
   return (
     <>
-      <PageHeader title="Settings" />
+      <PageHeader title="Programme Settings" subtitle="Organisation profile, supplier segmentation, user access and communication rules" />
       <RouteTabs
         base="/settings"
         active={tab}
         tabs={[
-          { key: 'org', label: 'Organisation & facilities' },
-          { key: 'tiers', label: 'Tiers & spend rules' },
-          { key: 'users', label: 'Users & roles' },
-          { key: 'reminders', label: 'Reminders & automation' },
-          { key: 'emails', label: 'Email templates' },
+          { key: 'org', label: 'Organisation & Facilities' },
+          { key: 'tiers', label: 'Supplier Segmentation' },
+          { key: 'users', label: 'Users & Roles' },
+          { key: 'reminders', label: 'Reminders & Escalation' },
+          { key: 'emails', label: 'Communication Templates' },
         ]}
       />
       {tab === 'org' && <OrgTab data={data} />}
@@ -53,7 +53,7 @@ function OrgTab({ data }: { data: PortalData }) {
 
   return (
     <CardGrid cols={2}>
-      <Card title="Organisation" question="Shown to suppliers on invitations">
+      <Card title="Organisation Profile" question="Displayed to suppliers on assessment invitations">
         <FormField label="Organisation name" htmlFor="org-name">
           <Input id="org-name" value={name} onChange={(e) => setName(e.target.value)} />
         </FormField>
@@ -72,7 +72,7 @@ function OrgTab({ data }: { data: PortalData }) {
           Save
         </Button>
       </Card>
-      <Card title="Facilities" question="Suppliers are linked to the facility they supply">
+      <Card title="Facilities" question="Suppliers are mapped to the facilities they serve">
         <Table<Facility>
           className="data-table"
           rowKey="name"
@@ -105,11 +105,11 @@ function TiersTab({ data }: { data: PortalData }) {
 
   return (
     <CardGrid cols={2}>
-      <Card title="Tier rules" question="Used to suggest a tier when you add a supplier, and by the risk matrix">
+      <Card title="Segmentation Criteria" question="Applied when onboarding new suppliers and in the risk matrix">
         <FormField label="Suggest Tier 1 when annual spend is at least (₹ lakh)" htmlFor="t1" hint={tier1Spend ? `= ${formatInr(tier1Spend)}` : undefined}>
           <InputNumber id="t1" min={1} style={{ width: 200 }} value={tier1Spend} onChange={(v) => setTier1Spend(v)} />
         </FormField>
-        <FormField label="…or the category is critical" htmlFor="t-crit">
+        <FormField label="…or the supplied category is classified as critical" htmlFor="t-crit">
           <Input id="t-crit" value="Chemicals, castings, polymers, PCBs, batteries" disabled />
         </FormField>
         <FormField label="High-spend threshold for the risk matrix (₹ lakh)" htmlFor="hs" hint={highSpend ? `= ${formatInr(highSpend)}` : undefined}>
@@ -121,13 +121,13 @@ function TiersTab({ data }: { data: PortalData }) {
           disabled={!valid || !dirty}
           onClick={async () => {
             await updateSettings({ tier1Spend: tier1Spend ?? undefined, highSpend: highSpend ?? undefined });
-            toast.success('Tier rules saved — the dashboard and risk matrix use them now');
+            toast.success('Segmentation criteria saved and applied');
           }}
         >
           Save
         </Button>
       </Card>
-      <Card title="What each tier gets" question="Assigned automatically when a supplier is added">
+      <Card title="Assessment Requirements by Tier" question="Assigned automatically at onboarding">
         <KeyValue
           plain
           items={[
@@ -144,8 +144,8 @@ function UsersTab({ data }: { data: PortalData }) {
   const toast = useToast();
   return (
     <Card
-      title="Users and roles"
-      question="Admins can make changes; reviewers can accept evidence; viewers can only look"
+      title="Users & Roles"
+      question="Administrators manage the programme; reviewers verify submissions and evidence; viewers have read-only access"
       extra={
         <Button size="sm" variant="primary" icon={<PlusOutlined />} onClick={() => toast.notYet('Adding users')}>
           Add user
@@ -185,22 +185,22 @@ function RemindersTab({ data }: { data: PortalData }) {
   const valid = (onb ?? 0) > 0 && (esc ?? 0) >= 0 && remOk;
 
   const AUTOMATION = [
-    'Raise an improvement action for every red flag',
-    'Remind suppliers about actions due in 7, 3 and 1 days',
-    'Email admins a daily digest when something needs attention',
-    'Also remind team users the supplier admin assigned',
+    'Raise a corrective action for every critical finding',
+    'Remind suppliers of corrective actions due in 7, 3 and 1 days',
+    'Send administrators a daily digest of items requiring attention',
+    'Notify supplier team members assigned by the supplier administrator',
   ];
 
   return (
     <CardGrid cols={2}>
-      <Card title="Due dates and reminders" question="Defaults for new assessments and new suppliers">
+      <Card title="Deadlines & Reminders" question="Default settings for new assessments and supplier onboarding">
         <FormField label="Default onboarding due date (days after invite)" htmlFor="r-onb">
           <InputNumber id="r-onb" min={1} style={{ width: 160 }} value={onb} onChange={(v) => setOnb(v)} />
         </FormField>
         <FormField label="Reminders before the due date (days)" htmlFor="r-rem" hint={remOk ? 'Comma-separated, e.g. 7, 3, 1' : 'Use whole numbers separated by commas, e.g. 7, 3, 1'}>
           <Input id="r-rem" value={rem} status={remOk ? undefined : 'error'} onChange={(e) => setRem(e.target.value)} style={{ maxWidth: 200 }} />
         </FormField>
-        <FormField label="Escalate to admins after (days overdue)" htmlFor="r-esc">
+        <FormField label="Escalate to programme administrators after (days overdue)" htmlFor="r-esc">
           <InputNumber id="r-esc" min={0} style={{ width: 160 }} value={esc} onChange={(v) => setEsc(v)} />
         </FormField>
         <Button
@@ -213,13 +213,13 @@ function RemindersTab({ data }: { data: PortalData }) {
               reminderDays: [...new Set(remDays)].sort((a, b) => b - a),
               escalateAfterDays: esc ?? s.escalateAfterDays,
             });
-            toast.success('Reminder rules saved');
+            toast.success('Reminder and escalation rules saved');
           }}
         >
           Save
         </Button>
       </Card>
-      <Card title="Automation" question="What happens without anyone clicking">
+      <Card title="Workflow Automation" question="Actions performed automatically by the platform">
         {AUTOMATION.map((t, i) => (
           <Checkbox key={t} className="check-row" checked={auto[i]} onChange={(e) => setAuto((a) => a.map((v, k) => (k === i ? e.target.checked : v)))}>
 <span>
@@ -234,14 +234,14 @@ function RemindersTab({ data }: { data: PortalData }) {
 
 function EmailsTab() {
   const toast = useToast();
-  const TEMPLATES = ['Invitation to an assessment', 'Reminder before due date', 'Overdue reminder', 'Question from the client', 'Response sent back for changes'];
+  const TEMPLATES = ['Assessment invitation', 'Pre-deadline reminder', 'Overdue notice', 'Clarification request', 'Submission returned for revision'];
   return (
-    <Card title="Email templates" question="What suppliers receive">
+    <Card title="Communication Templates" question="Standard communications issued to suppliers">
       {TEMPLATES.map((t) => (
         <ListRow
           key={t}
           title={t}
-          meta="Last edited by Bharat Carbon"
+          meta="Maintained by Bharat Carbon"
           action={
             <Button size="sm" onClick={() => toast.notYet('Editing email templates')}>
               Edit

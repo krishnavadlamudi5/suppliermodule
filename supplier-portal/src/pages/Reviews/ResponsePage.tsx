@@ -54,9 +54,9 @@ export default function ResponsePage() {
   if (!a || !s || !x) {
     return (
       <>
-        <PageHeader title="Response not found" crumbs={[{ label: 'Reviews', to: '/reviews' }, { label: 'Response' }]} />
+        <PageHeader title="Submission not found" crumbs={[{ label: 'Review Queue', to: '/reviews' }, { label: 'Submission' }]} />
         <Card>
-          <EmptyState action={<Link to="/reviews">Back to reviews</Link>}>This supplier hasn't got a response for this assessment.</EmptyState>
+          <EmptyState action={<Link to="/reviews">Back to Review Queue</Link>}>No submission exists for this supplier and assessment.</EmptyState>
         </Card>
       </>
     );
@@ -107,7 +107,7 @@ export default function ResponsePage() {
   return (
     <>
       <PageHeader
-        crumbs={[{ label: 'Reviews', to: '/reviews' }, { label: s.name }]}
+        crumbs={[{ label: 'Review Queue', to: '/reviews' }, { label: s.name }]}
         title={`${s.name} · ${a.title}`}
         subtitle={`Submitted by ${s.contact}${x.submittedOn ? ` on ${formatDate(x.submittedOn)}` : ''} · ${x.answered}/${a.questionCount} answered · ${ASSIGNMENT_LABEL[x.status]}`}
         actions={
@@ -123,7 +123,7 @@ export default function ResponsePage() {
       <div className="split-layout">
         <div>
           <p className="form-field__hint" style={{ margin: '0 0 10px' }}>
-            Showing {questions.length} sample questions. Accept, flag or ask on each answer; documents open next to the answer they support.
+            Showing {questions.length} disclosures. Accept, flag or request clarification on each; supporting evidence is shown alongside the disclosure it substantiates.
           </p>
           {questions.map((q) => (
             <AnswerCard key={q.code} data={data} a={a} s={s} q={q} decision={decisionOf(q)} />
@@ -137,12 +137,12 @@ export default function ResponsePage() {
             <span className="review-bar__actions">
               {unchecked.length > 0 && (
                 <Button variant="ghost" onClick={acceptRemaining}>
-                  Accept all {unchecked.length} unchecked
+                  Accept {unchecked.length} remaining
                 </Button>
               )}
-              <Button onClick={doSendBack}>Send back to supplier</Button>
+              <Button onClick={doSendBack}>Return for Revision</Button>
               <Button variant="primary" disabled={x.status === 'reviewed'} onClick={doMarkReviewed}>
-                {x.status === 'reviewed' ? 'Reviewed' : 'Mark reviewed'}
+                {x.status === 'reviewed' ? 'Review Completed' : 'Complete Review'}
               </Button>
             </span>
           </div>
@@ -150,15 +150,15 @@ export default function ResponsePage() {
 
         <div className="stack">
           <Scorecard data={data} a={a} s={s} />
-          <Card title="Activity">
+          <Card title="Audit Trail">
             <div style={{ marginTop: 10 }}>
               <Timeline
                 items={[
-                  ...(x.status === 'reviewed' ? [{ title: 'Marked reviewed', meta: 'Your team' }] : []),
-                  ...(x.status === 'reopened' ? [{ title: 'Sent back for changes', meta: 'Your team' }] : []),
+                  ...(x.status === 'reviewed' ? [{ title: 'Review completed', meta: 'Review team' }] : []),
+                  ...(x.status === 'reopened' ? [{ title: 'Returned for revision', meta: 'Review team' }] : []),
                   ...(x.submittedOn ? [{ title: 'Submitted', meta: `${s.contact} · ${formatDate(x.submittedOn)}` }] : []),
                   { title: 'Invited', meta: `Due ${formatDate(x.dueDate)}` },
-                  { title: 'Added to the assessment', meta: formatDate(a.startedOn) },
+                  { title: 'Enrolled in assessment', meta: formatDate(a.startedOn) },
                 ]}
               />
             </div>
@@ -185,7 +185,7 @@ function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessme
     if (!draft.trim()) return;
     await sendMessage(a.id, s.id, q.code, draft);
     setDraft('');
-    toast.success('Question added to this answer');
+    toast.success('Clarification request recorded');
   };
 
   return (
@@ -196,7 +196,7 @@ function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessme
           {q.section}
           {q.areaIndex != null ? ` · ${AREAS[q.areaIndex]}` : ''}
         </span>
-        {q.redFlag && <Pill tone="error">Red-flag question</Pill>}
+        {q.redFlag && <Pill tone="error">Critical compliance question</Pill>}
         {decision && (
           <span style={{ marginLeft: 'auto' }}>
             <Pill tone={decision === 'accepted' ? 'success' : 'error'}>{decision === 'accepted' ? '✓ Accepted' : '⚑ Flagged'}</Pill>
@@ -243,20 +243,20 @@ function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessme
           ) : flag ? (
             <Pill tone="error">Document missing</Pill>
           ) : (
-            <span className="answer__note">Accepted in an earlier review</span>
+            <span className="answer__note">Verified in a previous review cycle</span>
           )}
         </div>
       )}
       <div className="answer__actions">
-        <span className="answer__label">Your review</span>
+        <span className="answer__label">Reviewer decision</span>
         <Button size="sm" variant="accept" aria-pressed={decision === 'accepted'} onClick={() => toggleReviewDecision(a.id, s.id, q.code, 'accepted')}>
-          {decision === 'accepted' ? '✓ Answer accepted' : 'Accept answer'}
+          {decision === 'accepted' ? '✓ Answer accepted' : 'Accept disclosure'}
         </Button>
         <Button size="sm" variant="reject" aria-pressed={decision === 'flagged'} onClick={() => toggleReviewDecision(a.id, s.id, q.code, 'flagged')}>
-          {decision === 'flagged' ? '⚑ Flagged' : 'Flag answer'}
+          {decision === 'flagged' ? '⚑ Flagged' : 'Flag disclosure'}
         </Button>
         <Button size="sm" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-          Ask supplier{thread ? ` (${thread.messages.length})` : ''}
+          Request clarification{thread ? ` (${thread.messages.length})` : ''}
         </Button>
       </div>
       {open && (
@@ -264,7 +264,7 @@ function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessme
           {thread && <MessageList messages={thread.messages} />}
           <div className="answer__compose">
             <Input
-              placeholder={`Ask ${s.contact} about this answer…`}
+              placeholder={`Clarification request to ${s.contact}…`}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onPressEnter={send}
@@ -286,12 +286,12 @@ function AnswerCard({ data, a, s, q, decision }: { data: PortalData; a: Assessme
 function Scorecard({ data, a, s }: { data: PortalData; a: Assessment; s: Supplier }) {
   const annual = a.type === 'Annual ESG';
   return (
-    <Card title="Scorecard" question="Performance = average of the area scores">
+    <Card title="ESG Scorecard" question="ESG performance score = average of impact-area scores">
       <div className="scorecard">
         <div>
           <small>Score</small>
           <b className="scorecard__big">{annual && s.score != null ? s.score : '—'}</b>
-          {annual ? <MaturityPill score={s.score} /> : <small className="muted">Onboarding isn't scored</small>}
+          {annual ? <MaturityPill score={s.score} /> : <small className="muted">Onboarding is not maturity-scored</small>}
         </div>
         <div>
           <small>Risk</small>

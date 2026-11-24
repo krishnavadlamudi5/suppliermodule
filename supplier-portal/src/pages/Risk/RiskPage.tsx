@@ -27,21 +27,21 @@ export default function RiskPage() {
 
   return (
     <>
-      <PageHeader title="Risk & performance" subtitle="Where your supply base stands, by supplier and by area" />
+      <PageHeader title="Risk & Performance" subtitle="Supplier ESG risk exposure and performance, by supplier and impact area" />
       <RouteTabs
         base="/risk"
         active={tab}
         tabs={[
-          { key: 'matrix', label: 'Risk matrix' },
-          { key: 'heatmap', label: 'Area heatmap' },
-          { key: 'areas', label: 'Area deep-dive' },
-          { key: 'trends', label: 'Trends' },
+          { key: 'matrix', label: 'Risk Matrix' },
+          { key: 'heatmap', label: 'Impact Area Heatmap' },
+          { key: 'areas', label: 'Impact Area Analysis' },
+          { key: 'trends', label: 'Performance Trends' },
         ]}
       />
       {tab === 'matrix' && <MatrixTab data={data} />}
       {tab === 'heatmap' && (
         <div style={{ maxWidth: 820 }}>
-          <HeatmapCard suppliers={scored} footerLink={false} title="Supplier × area scores" />
+          <HeatmapCard suppliers={scored} footerLink={false} title="Supplier Performance by Impact Area" />
         </div>
       )}
       {tab === 'areas' && <AreasTab data={data} />}
@@ -57,7 +57,7 @@ function MatrixTab({ data }: { data: PortalData }) {
   return (
     <div className="split-layout">
       <RiskMatrixCard data={data} suppliers={scored} footerLink={false} />
-      <Card title="Engage first" question="High spend and a score below 60, highest spend first">
+      <Card title="Priority Engagement List" question="High-spend suppliers below the ESG performance threshold (score < 60), ranked by spend">
         {engage.length ? (
           engage.map((s) => {
             const sw = strongestAndWeakestArea(s);
@@ -65,17 +65,17 @@ function MatrixTab({ data }: { data: PortalData }) {
               <ListRow
                 key={s.id}
                 title={<Link to={`/suppliers/${s.id}`}>{s.name}</Link>}
-                meta={`Score ${s.score} · ${formatInr(s.spend)}${sw ? ` · weakest: ${AREAS[sw.weakest]}` : ''}`}
+                meta={`Score ${s.score} · ${formatInr(s.spend)}${sw ? ` · priority area: ${AREAS[sw.weakest]}` : ''}`}
               />
             );
           })
         ) : (
-          <EmptyState>No high-spend supplier is below 60.</EmptyState>
+          <EmptyState>No high-spend supplier falls below the performance threshold.</EmptyState>
         )}
         <h3 className="card__title" style={{ marginTop: 16 }}>
-          Not yet assessed
+          Pending Baseline Assessment
         </h3>
-        <p className="card__question">No score yet, so not on the matrix</p>
+        <p className="card__question">Not yet scored, so not plotted on the matrix</p>
         {unscored.map((s) => (
           <div key={s.id} style={{ fontSize: 13, padding: '3px 0' }}>
             <Link to={`/suppliers/${s.id}`}>{s.name}</Link> <span className="muted">· {formatInr(s.spend)}</span>
@@ -107,8 +107,8 @@ function AreasTab({ data }: { data: PortalData }) {
       </div>
       <CardGrid cols={2}>
         <Card
-          title={rows.length ? `${AREAS[i]}: average ${Math.round(avg ?? 0)} across ${rows.length} suppliers` : `${AREAS[i]}: no scores yet`}
-          question={`Score by supplier, highest first${i === SCOPE3_AREA ? ' · Tier 1 only' : ''}`}
+          title={`${AREAS[i]}: Supplier Performance`}
+          question={rows.length ? `Average score ${Math.round(avg ?? 0)} across ${rows.length} suppliers, ranked highest first${i === SCOPE3_AREA ? ' (assessed for Tier 1 only)' : ''}.` : 'No scores recorded for this impact area yet.'}
         >
           <Legend items={heatLegend.slice(0, 5)} />
           <ChartFigure table={{ columns: ['Supplier', 'Score'], numeric: [1], rows: rows.map((r) => [r.s.name, r.v]) }}>
@@ -119,9 +119,9 @@ function AreasTab({ data }: { data: PortalData }) {
             />
           </ChartFigure>
         </Card>
-        <Card title="What this area covers" question="From the scoring methodology">
+        <Card title="Impact Area Scope" question="As defined in the scoring methodology">
           <p style={{ margin: '0 0 12px' }}>{AREA_DESCRIPTIONS[i]}</p>
-          <h3 style={{ fontSize: 13, marginBottom: 6 }}>Suppliers to engage (below 50)</h3>
+          <h3 style={{ fontSize: 13, marginBottom: 6 }}>Suppliers requiring engagement (score below 50)</h3>
           {weak.length ? (
             weak.map((r) => (
               <div key={r.s.id} style={{ fontSize: 13, padding: '3px 0' }}>
@@ -130,11 +130,11 @@ function AreasTab({ data }: { data: PortalData }) {
             ))
           ) : (
             <div className="muted" style={{ fontSize: 13 }}>
-              None below 50.
+              No supplier scores below 50.
             </div>
           )}
           <p className="form-field__hint" style={{ marginTop: 12 }}>
-            Framework mappings (BRSR, EcoVadis, Scope 3) for this area are in <Link to="/reports">Reports &amp; exports</Link>.
+            Framework mappings (BRSR, EcoVadis, GHG Protocol Scope 3) for this area are available in <Link to="/reports">Disclosures &amp; Reports</Link>.
           </p>
         </Card>
       </CardGrid>
@@ -157,8 +157,8 @@ function TrendsTab({ data }: { data: PortalData }) {
     <CardGrid cols={2}>
       <AreaTrendCard data={data} suppliers={scored} footerLink={false} />
       <Card
-        title={`${up} supplier${up === 1 ? '' : 's'} improved by ${band}+ points; ${down} declined`}
-        question={`Change in ESG score vs 2025 (±${band} = improved / declined). Suppliers new this year are left out.`}
+        title="Supplier Score Movement"
+        question={`${up} ${up === 1 ? 'supplier' : 'suppliers'} improved by ${band}+ points and ${down} declined versus the 2025 baseline (±${band} threshold). Suppliers without a prior-year score are excluded.`}
       >
         <Legend
           items={[

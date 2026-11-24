@@ -28,15 +28,15 @@ export default function ReviewsPage() {
 
   return (
     <>
-      <PageHeader title="Reviews" subtitle="Everything waiting on your team, in one inbox" />
+      <PageHeader title="Review Queue" subtitle="Submissions, evidence, clarifications and critical findings awaiting verification" />
       <RouteTabs
         base="/reviews"
         active={tab}
         tabs={[
-          { key: 'responses', label: 'Responses', count: n.review },
-          { key: 'evidence', label: 'Evidence', count: n.evidence },
+          { key: 'responses', label: 'Submissions', count: n.review },
+          { key: 'evidence', label: 'Evidence Verification', count: n.evidence },
           { key: 'clarifications', label: 'Clarifications', count: n.questions },
-          { key: 'flags', label: 'Red flags', count: n.flags },
+          { key: 'flags', label: 'Critical Findings', count: n.flags },
         ]}
       />
       {tab === 'responses' && <ResponsesTab data={data} />}
@@ -66,11 +66,11 @@ function ResponsesTab({ data }: { data: PortalData }) {
     { title: 'Score', key: 'sc', align: 'right', render: (_, x) => <span className="tabular">{supplierById(data, x.supplierId)?.score ?? '—'}</span> },
     { title: 'Risk', key: 'r', render: (_, x) => <RiskBadge level={riskOf(data, supplierById(data, x.supplierId)!)} /> },
     {
-      title: 'Waiting on',
+      title: 'Pending action',
       key: 'w',
       render: (_, x) => {
         const docs = data.evidence.filter((e) => e.supplierId === x.supplierId && e.assessmentId === x.assessmentId && e.status === 'Pending').length;
-        return docs ? `${docs} document${docs > 1 ? 's' : ''} to verify` : 'Your review';
+        return docs ? `${docs} ${docs > 1 ? 'documents' : 'document'} to verify` : 'Reviewer assessment';
       },
     },
     {
@@ -95,7 +95,7 @@ function ResponsesTab({ data }: { data: PortalData }) {
       pagination={false}
       columns={columns}
       dataSource={rows}
-      locale={{ emptyText: <EmptyState>Nothing waiting for review.</EmptyState> }}
+      locale={{ emptyText: <EmptyState>No submissions awaiting review.</EmptyState> }}
       scroll={{ x: 900 }}
     />
   );
@@ -125,7 +125,7 @@ function EvidenceTab({ data }: { data: PortalData }) {
   const columns: TableColumnsType<Evidence> = [
     { title: 'Document', key: 'f', render: (_, e) => <DocChip name={e.fileName} /> },
     { title: 'Supplier', key: 's', render: (_, e) => <CellTitle to={`/suppliers/${e.supplierId}`} title={supplierById(data, e.supplierId)?.name} /> },
-    { title: 'Supports the answer to', key: 'q', render: (_, e) => <CellTitle title={<span style={{ fontWeight: 500 }}>{e.question}</span>} sub={assessmentById(data, e.assessmentId)?.title} /> },
+    { title: 'Linked disclosure', key: 'q', render: (_, e) => <CellTitle title={<span style={{ fontWeight: 500 }}>{e.question}</span>} sub={assessmentById(data, e.assessmentId)?.title} /> },
     { title: 'Uploaded', key: 'd', render: (_, e) => formatDate(e.uploadedOn) },
     {
       title: <span className="sr-only">Actions</span>,
@@ -156,11 +156,11 @@ function EvidenceTab({ data }: { data: PortalData }) {
         pagination={false}
         columns={columns}
         dataSource={rows}
-        locale={{ emptyText: <EmptyState>No documents to verify.</EmptyState> }}
+        locale={{ emptyText: <EmptyState>No evidence awaiting verification.</EmptyState> }}
         scroll={{ x: 900 }}
       />
       <p className="form-field__hint" style={{ marginTop: 10 }}>
-        Accept only if the document is valid, legible, in the supplier's name, in date, and supports the answer. Accepted documents raise data confidence.
+        Accept evidence only if it is valid, legible, issued to the supplier, within its validity period and substantiates the disclosure. Verified evidence increases the data confidence score.
       </p>
     </>
   );
@@ -169,7 +169,7 @@ function EvidenceTab({ data }: { data: PortalData }) {
 function ClarificationsTab({ data }: { data: PortalData }) {
   // Supplier-waiting threads first
   const threads = [...data.threads].sort((a, b) => Number(b.messages.at(-1)?.from === 'supplier') - Number(a.messages.at(-1)?.from === 'supplier'));
-  if (!threads.length) return <Card><EmptyState>No questions yet.</EmptyState></Card>;
+  if (!threads.length) return <Card><EmptyState>No clarification requests on record.</EmptyState></Card>;
   return (
     <div className="stack">
       {threads.map((t) => {
@@ -183,8 +183,8 @@ function ClarificationsTab({ data }: { data: PortalData }) {
                 {supplierById(data, t.supplierId)?.name} <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>on “{q?.text ?? t.questionCode}”</span>
               </>
             }
-            extra={<Pill tone={waiting ? 'brand' : 'neutral'}>{waiting ? 'Awaiting your reply' : 'Awaiting supplier'}</Pill>}
-            footerLink={{ to: `/response/${t.assessmentId}/${t.supplierId}#q-${t.questionCode}`, label: 'Reply in the response' }}
+            extra={<Pill tone={waiting ? 'brand' : 'neutral'}>{waiting ? 'Response required' : 'Awaiting supplier'}</Pill>}
+            footerLink={{ to: `/response/${t.assessmentId}/${t.supplierId}#q-${t.questionCode}`, label: 'Respond in submission' }}
           >
             <div style={{ marginTop: 10 }}>
               <MessageList messages={t.messages} />
@@ -203,7 +203,7 @@ function FlagsTab({ data }: { data: PortalData }) {
 
   const columns: TableColumnsType<RedFlag> = [
     {
-      title: 'Red flag',
+      title: 'Critical finding',
       key: 't',
       render: (_, f) => (
         <span style={{ display: 'inline-flex', gap: 8, alignItems: 'baseline' }}>
@@ -227,13 +227,13 @@ function FlagsTab({ data }: { data: PortalData }) {
             variant="primary"
             onClick={async () => {
               await raiseAction(f.id);
-              toast.success('Improvement action raised');
+              toast.success('Corrective action raised');
             }}
           >
-            Raise action
+            Raise Corrective Action
           </Button>
         ) : (
-          <Link to="/actions">View action</Link>
+          <Link to="/actions">View corrective action</Link>
         ),
     },
   ];
@@ -246,7 +246,7 @@ function FlagsTab({ data }: { data: PortalData }) {
       pagination={false}
       columns={columns}
       dataSource={rows}
-      locale={{ emptyText: <EmptyState>No open red flags.</EmptyState> }}
+      locale={{ emptyText: <EmptyState>No open critical findings.</EmptyState> }}
       scroll={{ x: 1000 }}
     />
   );

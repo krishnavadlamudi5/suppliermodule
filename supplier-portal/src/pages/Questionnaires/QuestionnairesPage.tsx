@@ -26,14 +26,14 @@ export default function QuestionnairesPage() {
   if (!(TABS as readonly string[]).includes(tab)) return <Navigate to="/questionnaires/templates" replace />;
   return (
     <>
-      <PageHeader title="Questionnaires" subtitle="Templates, the question bank and scoring rules" />
+      <PageHeader title="Questionnaire Library" subtitle="Assessment templates, question bank and scoring methodology" />
       <RouteTabs
         base="/questionnaires"
         active={tab}
         tabs={[
           { key: 'templates', label: 'Templates' },
-          { key: 'bank', label: 'Question bank', count: data.questions.length },
-          { key: 'scoring', label: 'Scoring rules' },
+          { key: 'bank', label: 'Question Bank', count: data.questions.length },
+          { key: 'scoring', label: 'Scoring Methodology' },
         ]}
       />
       {tab === 'templates' && <TemplatesTab />}
@@ -44,13 +44,13 @@ export default function QuestionnairesPage() {
 }
 
 const TEMPLATES: { type: AssessmentType; label?: string; scope: string; questions: number; description: string }[] = [
-  { type: 'Onboarding', scope: 'Tier 1', questions: 10, description: 'Company, permits and policies. Compulsory.' },
-  { type: 'Onboarding', scope: 'Tier 2', questions: 5, description: 'Short basic checks. Compulsory.' },
-  { type: 'Annual ESG', scope: 'Tier 1', questions: 50, description: 'Carbon, Scope 3, water, waste, sourcing, labour, ethics.' },
-  { type: 'Annual ESG', scope: 'Tier 2', questions: 25, description: 'Lighter yearly review across the same areas.' },
-  { type: 'Materiality', scope: 'Stakeholders', questions: 12, description: 'Topic ratings for impact and financial importance.' },
-  { type: 'Follow-up', label: 'Follow-up review', scope: 'Any', questions: 8, description: 'Targeted re-check after a red flag or action.' },
-  { type: 'Follow-up', label: 'Custom', scope: 'Any', questions: 0, description: 'Build your own from the question bank.' },
+  { type: 'Onboarding', scope: 'Tier 1', questions: 10, description: 'Corporate profile, statutory permits and policies. Mandatory for all suppliers.' },
+  { type: 'Onboarding', scope: 'Tier 2', questions: 5, description: 'Core statutory compliance checks. Mandatory for all suppliers.' },
+  { type: 'Annual ESG', scope: 'Tier 1', questions: 50, description: 'Comprehensive assessment across all seven impact areas, including Scope 3 emissions.' },
+  { type: 'Annual ESG', scope: 'Tier 2', questions: 25, description: 'Proportionate annual assessment across the core impact areas.' },
+  { type: 'Materiality', scope: 'Stakeholders', questions: 12, description: 'Stakeholder rating of sustainability topics for impact and financial materiality.' },
+  { type: 'Follow-up', label: 'Follow-up review', scope: 'Any', questions: 8, description: 'Targeted verification following a critical finding or corrective action.' },
+  { type: 'Follow-up', label: 'Custom', scope: 'Any', questions: 0, description: 'Bespoke questionnaire assembled from the Question Bank.' },
 ];
 
 function TemplatesTab() {
@@ -62,7 +62,7 @@ function TemplatesTab() {
         <Card key={`${t.label ?? t.type}-${t.scope}`} title={t.label ?? t.type} extra={<Pill tone="neutral">{t.scope}</Pill>} question={t.description}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="muted" style={{ fontSize: 13 }}>
-              {t.questions ? `${t.questions} questions` : 'Empty'}
+              {t.questions ? `${t.questions} questions` : 'No questions yet'}
             </span>
             <span style={{ flex: 1 }} />
             <Button size="sm" onClick={() => toast.notYet('The template editor')}>
@@ -108,11 +108,11 @@ function BankTab({ data }: { data: PortalData }) {
         />
       ),
     },
-    { title: 'Scoring area', key: 'a', render: (_, x) => (x.areaIndex != null ? AREAS[x.areaIndex] : <span className="muted">Not scored</span>) },
+    { title: 'Impact area', key: 'a', render: (_, x) => (x.areaIndex != null ? AREAS[x.areaIndex] : <span className="muted">Not scored</span>) },
     { title: 'Answer type', dataIndex: 'answerType' },
     { title: 'Evidence', key: 'e', render: (_, x) => (x.evidenceRequired ? 'Required' : '—') },
-    { title: 'Red flag', key: 'r', render: (_, x) => (x.redFlag ? <span className="risk risk--high"><i aria-hidden="true" />Yes</span> : '—') },
-    { title: 'Tiers', key: 't', render: (_, x) => x.tiers.map((t) => `Tier ${t}`).join(', ') },
+    { title: 'Critical compliance', key: 'r', render: (_, x) => (x.redFlag ? <span className="risk risk--high"><i aria-hidden="true" />Yes</span> : '—') },
+    { title: 'Applicable tiers', key: 't', render: (_, x) => x.tiers.map((t) => `Tier ${t}`).join(', ') },
     {
       title: <span className="sr-only">Actions</span>,
       key: 'edit',
@@ -138,7 +138,7 @@ function BankTab({ data }: { data: PortalData }) {
         />
         <span className="filter-bar__end">
           <Button size="sm" variant="primary" icon={<PlusOutlined />} onClick={() => toast.notYet('Adding questions')}>
-            Add question
+            Add Question
           </Button>
         </span>
       </FilterBar>
@@ -149,7 +149,7 @@ function BankTab({ data }: { data: PortalData }) {
         pagination={false}
         columns={columns}
         dataSource={rows}
-        locale={{ emptyText: <EmptyState>No questions match.</EmptyState> }}
+        locale={{ emptyText: <EmptyState>No questions match the search criteria.</EmptyState> }}
         scroll={{ x: 1000 }}
       />
     </>
@@ -159,7 +159,7 @@ function BankTab({ data }: { data: PortalData }) {
 function ScoringTab() {
   return (
     <CardGrid cols={2}>
-      <Card title="Maturity levels" question="Mapped from the performance score">
+      <Card title="ESG Maturity Levels" question="Derived from the ESG performance score">
         <table className="chart-figure__table">
           <thead>
             <tr>
@@ -184,17 +184,17 @@ function ScoringTab() {
           </tbody>
         </table>
       </Card>
-      <Card title="How scores are built" question="Three results per supplier, plus data confidence">
+      <Card title="Scoring Framework" question="Three outcome measures per supplier, plus a data confidence rating">
         <KeyValue
           plain
           items={[
-            ['Area score', "Points ÷ maximum for the area's questions × 100"],
-            ['Performance', 'Average of the area scores; material topics weigh ×1.5'],
-            ['Basic compliance', 'Checks passed ÷ applicable checks'],
-            ['Year on year', `Change vs the same type and tier last period (±${RISK_RULES.yoyBand} = improved / declined)`],
-            ['Risk: High', `Any unresolved red flag, or performance below ${RISK_RULES.highBelow}`],
-            ['Risk: Medium', `Compliance below 100%, or performance ${RISK_RULES.highBelow}–${RISK_RULES.mediumBelow - 1}`],
-            ['Risk: Low', `Full compliance and performance ${RISK_RULES.mediumBelow}+`],
+            ['Impact-area score', 'Points achieved ÷ maximum available for the impact area × 100'],
+            ['ESG performance score', 'Average of impact-area scores; material topics weighted 1.5×'],
+            ['Compliance rate', 'Compliance checks passed ÷ applicable checks'],
+            ['Year-on-year change', `Change vs the same type and tier last period (±${RISK_RULES.yoyBand} = improved / declined)`],
+            ['Risk rating: High', `Any unresolved critical finding, or ESG performance below ${RISK_RULES.highBelow}`],
+            ['Risk rating: Medium', `Compliance below 100%, or performance ${RISK_RULES.highBelow}–${RISK_RULES.mediumBelow - 1}`],
+            ['Risk rating: Low', `Full compliance and performance ${RISK_RULES.mediumBelow}+`],
           ]}
         />
       </Card>

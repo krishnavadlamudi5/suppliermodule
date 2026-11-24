@@ -15,10 +15,10 @@ import { formatDate, formatDateShort, formatInr } from '../../lib/format';
 
 const STEPS = ['Type', 'Questions', 'Suppliers & dates', 'Review & launch'];
 const TYPES: { value: AssessmentType; detail: string }[] = [
-  { value: 'Onboarding', detail: 'Company, permits and policy checks' },
-  { value: 'Annual ESG', detail: 'Yearly review across 7 scoring areas' },
-  { value: 'Materiality', detail: 'Stakeholder ratings of ESG topics' },
-  { value: 'Follow-up', detail: 'Targeted re-check after a red flag' },
+  { value: 'Onboarding', detail: 'Statutory permits, policies and due-diligence checks' },
+  { value: 'Annual ESG', detail: 'Annual performance assessment across seven impact areas' },
+  { value: 'Materiality', detail: 'Stakeholder consultation on double materiality' },
+  { value: 'Follow-up', detail: 'Targeted verification following a critical finding' },
 ];
 const PERIODS = ['2026', '2027', 'Q1 2027'];
 
@@ -85,7 +85,7 @@ export function NewAssessmentDrawer({ open, preset, onClose }: Props) {
     <SideDrawer
       open={open}
       onClose={onClose}
-      title="New assessment"
+      title="Launch ESG Assessment"
       steps={STEPS}
       step={step}
       footer={
@@ -115,7 +115,7 @@ export function NewAssessmentDrawer({ open, preset, onClose }: Props) {
             />
           </FormField>
           {!isMat && a.type !== 'Follow-up' && (
-            <FormField label="For">
+            <FormField label="Supplier tier">
               <Segmented<Tier>
                 value={a.tier}
                 onChange={(v) => setA((p) => ({ ...p, tier: v, title: '', supplierIds: [] }))}
@@ -207,7 +207,7 @@ export function NewAssessmentDrawer({ open, preset, onClose }: Props) {
         <>
           {dup && (
             <div style={{ marginBottom: 14 }}>
-              <Callout tone="warning" title="An assessment like this already exists:">
+              <Callout tone="warning" title="A comparable assessment already exists:">
                 {dup.title} · {dup.period} ({dup.status}).{' '}
                 <Link to={`/assessments/detail/${dup.id}`} onClick={onClose}>
                   Add suppliers to it instead

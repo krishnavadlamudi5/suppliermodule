@@ -32,13 +32,13 @@ export default function MaterialityPage() {
   return (
     <>
       <PageHeader
-        title="Materiality"
-        subtitle="Double materiality: impact on people and planet × financial importance to the business"
+        title="Double Materiality"
+        subtitle="Sustainability topics assessed for impact materiality (effects on people and the environment) and financial materiality (risks and opportunities for the business)"
         actions={
           <>
-            <Button onClick={() => toast.notYet('Exporting the matrix')}>Export matrix</Button>
+            <Button onClick={() => toast.notYet('Exporting the matrix')}>Export Matrix</Button>
             <Button variant="primary" icon={<PlusOutlined />} onClick={() => openNewAssessment({ type: 'Materiality' })}>
-              New materiality assessment
+              New Materiality Assessment
             </Button>
           </>
         }
@@ -47,9 +47,9 @@ export default function MaterialityPage() {
         base="/materiality"
         active={tab}
         tabs={[
-          { key: 'matrix', label: 'Matrix' },
-          { key: 'topics', label: 'Topics', count: data.topics.length },
-          { key: 'survey', label: 'Stakeholder survey' },
+          { key: 'matrix', label: 'Materiality Matrix' },
+          { key: 'topics', label: 'Material Topics', count: data.topics.length },
+          { key: 'survey', label: 'Stakeholder Consultation' },
         ]}
       />
       {tab === 'matrix' && <MatrixTab data={data} />}
@@ -71,7 +71,7 @@ function MatrixTab({ data }: { data: PortalData }) {
   return (
     <div className="split-layout">
       <MaterialityCard data={data} large footerLink={false} />
-      <Card title="Topics" question="Numbers match the dots">
+      <Card title="Topic Register" question="Reference numbers correspond to the matrix">
         <ul className="topic-list">
           {data.topics.map((t) => (
             <li key={t.n}>
@@ -90,22 +90,22 @@ function TopicsTab({ data }: { data: PortalData }) {
   const columns: TableColumnsType<MaterialityTopicRecord> = [
     { title: '#', key: 'n', width: 50, render: (_, t) => <TopicDot t={t} /> },
     { title: 'Topic', key: 't', render: (_, t) => <b>{t.title}</b> },
-    { title: 'Impact', key: 'i', align: 'right', sorter: (a, b) => a.impact - b.impact, render: (_, t) => <span className="tabular">{t.impact.toFixed(1)}</span> },
-    { title: 'Financial', key: 'f', align: 'right', sorter: (a, b) => a.financial - b.financial, render: (_, t) => <span className="tabular">{t.financial.toFixed(1)}</span> },
+    { title: 'Impact materiality', key: 'i', align: 'right', sorter: (a, b) => a.impact - b.impact, render: (_, t) => <span className="tabular">{t.impact.toFixed(1)}</span> },
+    { title: 'Financial materiality', key: 'f', align: 'right', sorter: (a, b) => a.financial - b.financial, render: (_, t) => <span className="tabular">{t.financial.toFixed(1)}</span> },
     {
-      title: 'Result',
+      title: 'Materiality outcome',
       key: 'r',
       render: (_, t) =>
         isDoubleMaterial(t) ? <Pill tone="brand">Double material</Pill> : isMaterial(t) ? <Pill tone="neutral">Material</Pill> : <span className="muted">Monitor</span>,
     },
-    { title: 'Scoring area it drives', key: 'a', render: (_, t) => AREAS[t.areaIndex] },
-    { title: 'Effect on Annual ESG', key: 'e', render: (_, t) => (isMaterial(t) ? 'Weight ×1.5; questions required' : 'Standard weight') },
+    { title: 'Linked impact area', key: 'a', render: (_, t) => AREAS[t.areaIndex] },
+    { title: 'Scoring treatment', key: 'e', render: (_, t) => (isMaterial(t) ? '1.5× weighting; mandatory disclosures' : 'Standard weighting') },
   ];
   return (
     <>
       <Table<MaterialityTopicRecord> className="data-table" rowKey="n" size="middle" pagination={false} columns={columns} dataSource={data.topics} scroll={{ x: 900 }} />
       <p className="form-field__hint" style={{ marginTop: 10 }}>
-        Weights are a proposal for the scoring engine; you confirm them in Questionnaires → Scoring rules before they apply.
+        Proposed weightings take effect once confirmed in Questionnaire Library → Scoring Methodology.
       </p>
     </>
   );
@@ -121,8 +121,8 @@ function SurveyTab({ data }: { data: PortalData }) {
   return (
     <CardGrid cols={2}>
       <Card
-        title={`${done} of ${total} stakeholders have responded`}
-        question={`${mat ? `${mat.title} · due ${formatDate(mat.dueDate)}` : 'No active survey'} · groups under 50% are highlighted`}
+        title="Stakeholder Consultation Progress"
+        question={`${done} of ${total} stakeholders have responded (${Math.round((done / (total || 1)) * 100)}%). ${mat ? `${mat.title}, due ${formatDate(mat.dueDate)}.` : 'No active consultation.'} Groups below 50% response are highlighted.`}
       >
         <ChartFigure table={{ columns: ['Group', 'Responded', 'Invited', 'Rate'], numeric: [1, 2], rows: data.survey.map((g) => [g.group, g.responded, g.invited, `${Math.round((g.responded / g.invited) * 100)}%`]) }}>
           <HBarChart
@@ -137,25 +137,25 @@ function SurveyTab({ data }: { data: PortalData }) {
         </ChartFigure>
         <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Button size="sm" onClick={() => toast.notYet('Sending reminder emails')}>
-            Remind non-responders
+            Remind Non-respondents
           </Button>
           <Button size="sm" onClick={() => toast.notYet('Adding stakeholders')}>
-            + Add stakeholders
+            + Add Stakeholders
           </Button>
         </div>
         {lagging.length > 0 && (
           <p className="form-field__hint" style={{ marginTop: 10 }}>
-            Lagging: {lagging.map((g) => g.group).join(', ')}.
+            Below target response rate: {lagging.map((g) => g.group).join(', ')}.
           </p>
         )}
       </Card>
-      <Card title="How it works">
+      <Card title="Methodology">
         <ol className="how-list">
-          <li>Pick topics: the 7 scoring areas plus sector topics.</li>
-          <li>Invite stakeholders: internal teams, selected suppliers, customers.</li>
-          <li>Each rates every topic for impact and for financial importance, 1–5.</li>
-          <li>The matrix updates as responses arrive.</li>
-          <li>Material topics weigh more in Annual ESG scoring and export to BRSR.</li>
+          <li>Topic identification: the seven impact areas plus sector-specific topics.</li>
+          <li>Stakeholder engagement: internal functions, selected suppliers and customers.</li>
+          <li>Each stakeholder rates every topic for impact and financial materiality on a 1–5 scale.</li>
+          <li>The materiality matrix updates as responses are received.</li>
+          <li>Material topics receive higher weighting in Annual ESG scoring and feed BRSR disclosures.</li>
         </ol>
       </Card>
     </CardGrid>

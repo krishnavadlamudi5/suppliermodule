@@ -11,7 +11,7 @@ export default function ReportsPage() {
   const toast = useToast();
   return (
     <>
-      <PageHeader title="Reports & exports" subtitle="Framework mappings live here, not on the dashboards" />
+      <PageHeader title="Disclosures & Reports" subtitle="Framework-aligned exports of supplier ESG data for regulatory and voluntary reporting" />
       <CardGrid cols={2}>
         {data.reports.map((r) => (
           <Card key={r.id} title={r.title} question={r.description}>
@@ -20,7 +20,7 @@ export default function ReportsPage() {
                 <div style={{ flex: 1 }}>
                   <ProgressBar height={8} segments={[{ pct: r.coverage, color: color('chart-series-1') }]} label={`${r.coverage}% of fields covered`} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{r.coverage}% of fields covered</span>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>{r.coverage}% data coverage</span>
               </div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
@@ -29,7 +29,7 @@ export default function ReportsPage() {
               </Button>
               {r.coverage != null && (
                 <Button size="sm" onClick={() => toast.notYet('The field mapping view')}>
-                  View field mapping
+                  View Field Mapping
                 </Button>
               )}
             </div>

@@ -71,9 +71,6 @@ export function TopBar({ data, unread, onOpenNotifications, onOpenMenu }: TopBar
           }}
         />
       </AutoComplete>
-      <span className="topbar__sample" title="The portal is running on sample suppliers and assessments">
-        Sample data
-      </span>
       <span className="topbar__spacer" />
       <SaveStatus />
       <span className="topbar__programme" title="Programme year">

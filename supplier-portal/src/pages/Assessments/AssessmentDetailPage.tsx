@@ -76,7 +76,7 @@ export default function AssessmentDetailPage() {
         actions={
           a.status === 'Active' && (
             <>
-              <Button onClick={() => toast.notYet('Sending reminder emails')}>Send reminder now</Button>
+              <Button onClick={() => toast.notYet('Sending reminder emails')}>Send Reminder</Button>
               <Button variant="primary" icon={<PlusOutlined />} onClick={() => setAdding(true)}>
                 Add suppliers
               </Button>
@@ -89,9 +89,9 @@ export default function AssessmentDetailPage() {
         active={tab}
         tabs={[
           { key: 'progress', label: 'Progress' },
-          { key: 'suppliers', label: 'Suppliers', count: list.length },
+          { key: 'suppliers', label: 'Participants', count: list.length },
           { key: 'results', label: 'Results' },
-          { key: 'settings', label: 'Settings' },
+          { key: 'settings', label: 'Configuration' },
         ]}
       />
       {tab === 'progress' && <ProgressTab data={data} a={a} list={list} />}
@@ -112,7 +112,7 @@ function ProgressTab({ data, a, list }: { data: PortalData; a: Assessment; list:
   const defaultDue = addDays(data.asOf, data.settings.onboardingDays);
 
   const dates: { title: React.ReactNode; meta: string }[] = [];
-  if (a.startedOn) dates.push({ title: 'Started', meta: formatDate(a.startedOn) });
+  if (a.startedOn) dates.push({ title: 'Launched', meta: formatDate(a.startedOn) });
   if (a.dueDate) {
     data.settings.reminderDays.forEach((d) => {
       const at = addDays(a.dueDate as string, -d);
@@ -120,7 +120,7 @@ function ProgressTab({ data, a, list }: { data: PortalData; a: Assessment; list:
     });
     dates.push({ title: <b>Due</b>, meta: `${formatDate(a.dueDate)}${isOverdue(data.asOf, a.dueDate) ? ' · past due' : ''}` });
   }
-  dates.push({ title: 'Escalation to admins', meta: `${data.settings.escalateAfterDays} days after the due date` });
+  dates.push({ title: 'Escalation to programme administrators', meta: `${data.settings.escalateAfterDays} days after the due date` });
 
   return (
     <CardGrid cols={2}>
@@ -129,7 +129,7 @@ function ProgressTab({ data, a, list }: { data: PortalData; a: Assessment; list:
         {notInvited.length > 0 && (
           <Callout
             tone="error"
-            title={`${notInvited.length} supplier${notInvited.length > 1 ? 's have' : ' has'} not been invited.`}
+            title={`${notInvited.length} ${notInvited.length > 1 ? 'participants are' : 'participant is'} pending invitation.`}
             action={
               <Button
                 size="sm"
@@ -143,10 +143,10 @@ function ProgressTab({ data, a, list }: { data: PortalData; a: Assessment; list:
               </Button>
             }
           >
-            {notInvited.map((x) => supplierById(data, x.supplierId)?.name).join(', ')} won't hear from you until you send the invite.
+            {notInvited.map((x) => supplierById(data, x.supplierId)?.name).join(', ')} cannot begin until the invitation is issued.
           </Callout>
         )}
-        <Card title="Key dates" question="Reminders go out on these dates to suppliers who haven't submitted">
+        <Card title="Assessment Timeline" question="Automated reminders are issued to participants who have not yet submitted">
           <Timeline items={dates} />
         </Card>
       </div>
@@ -249,7 +249,7 @@ function SuppliersTab({ data, a, list, onAdd }: { data: PortalData; a: Assessmen
         pagination={false}
         columns={columns}
         dataSource={list}
-        locale={{ emptyText: <EmptyState>No suppliers in this assessment yet.</EmptyState> }}
+        locale={{ emptyText: <EmptyState>No participants enrolled yet.</EmptyState> }}
         scroll={{ x: 900 }}
       />
     </>
@@ -262,12 +262,12 @@ function ResultsTab({ data, a, list }: { data: PortalData; a: Assessment; list: 
   if (a.type !== 'Annual ESG') {
     const flagged = new Set(data.flags.filter((f) => f.assessmentId === a.id).map((f) => f.supplierId)).size;
     const rows = [
-      { l: 'Passed all checks', v: list.filter((x) => x.status === 'reviewed' && !openFlags(data, x.supplierId).length).length, c: C.series1 },
-      { l: 'Red flag raised', v: flagged, c: undefined },
-      { l: 'Not submitted yet', v: list.filter((x) => !isSubmitted(x)).length, c: undefined },
+      { l: 'Passed all compliance checks', v: list.filter((x) => x.status === 'reviewed' && !openFlags(data, x.supplierId).length).length, c: C.series1 },
+      { l: 'Critical finding raised', v: flagged, c: undefined },
+      { l: 'Submission outstanding', v: list.filter((x) => !isSubmitted(x)).length, c: undefined },
     ];
     return (
-      <Card title="Onboarding checks" question="Onboarding is pass/fail on compliance; it isn't scored for maturity.">
+      <Card title="Onboarding Due-Diligence Outcomes" question="Onboarding is assessed on a pass/fail compliance basis and is not maturity-scored.">
         <ChartFigure table={{ columns: ['Outcome', 'Suppliers'], numeric: [1], rows: rows.map((r) => [r.l, r.v]) }}>
           <HBarChart rows={rows.map((r) => ({ label: r.l, value: r.v, color: r.c }))} ariaLabel="Onboarding outcomes" />
         </ChartFigure>
@@ -280,13 +280,13 @@ function ResultsTab({ data, a, list }: { data: PortalData; a: Assessment; list: 
     .map((x) => supplierById(data, x.supplierId)!)
     .filter((s) => s.score != null)
     .sort((p, q) => (q.score ?? 0) - (p.score ?? 0));
-  if (!scored.length) return <Card><EmptyState>Results appear once suppliers submit.</EmptyState></Card>;
+  if (!scored.length) return <Card><EmptyState>Results are published once participants submit.</EmptyState></Card>;
   const avg = Math.round(average(scored.map((s) => s.score)) ?? 0);
   const areas = areaAverages(scored);
 
   return (
     <CardGrid cols={2}>
-      <Card title={`Average score ${avg} across ${scored.length} supplier${scored.length === 1 ? '' : 's'}`} question="Score by supplier, highest first · colored by maturity level">
+      <Card title="Participant ESG Scores" question={`Average ESG score ${avg} across ${scored.length} ${scored.length === 1 ? 'participant' : 'participants'}. Ranked highest first, shaded by maturity level.`}>
         <Legend items={MATURITY_LEVELS.map((l, i) => ({ label: l, color: maturityRamp[i] }))} />
         <ChartFigure table={{ columns: ['Supplier', 'Score', 'Maturity'], numeric: [1], rows: scored.map((s) => [s.name, s.score, MATURITY_LEVELS[maturityIndex(s.score) ?? 0]]) }}>
           <HBarChart
@@ -301,7 +301,7 @@ function ResultsTab({ data, a, list }: { data: PortalData; a: Assessment; list: 
           />
         </ChartFigure>
       </Card>
-      <Card title="Average by area" question="Where this group is strong and weak">
+      <Card title="Average Score by Impact Area" question="Relative strengths and improvement priorities for this cohort">
         <ChartFigure
           table={{ columns: ['Area', 'Average'], numeric: [1], rows: AREAS.map((l, i) => [l, areas[i] == null ? 'n/a' : Math.round(areas[i] as number)]) }}
         >
@@ -339,26 +339,26 @@ function SettingsTab({ data, a }: { data: PortalData; a: Assessment }) {
   };
   return (
     <CardGrid cols={2}>
-      <Card title="Questions" question={`${a.questionCount} questions from the ${a.type} template${a.tier ? ` for Tier ${a.tier}` : ''}`}>
+      <Card title="Questionnaire Scope" question={`${a.questionCount} questions from the ${a.type} template${a.tier ? ` for Tier ${a.tier}` : ''}`}>
         <KeyValue
           items={[
-            ['Required', 'All red-flag and evidence questions'],
-            ['Questionnaire', <Link key="q" to="/questionnaires/bank">View in question bank</Link>],
-            ['Compared with', `${a.type}${a.tier ? ` · Tier ${a.tier}` : ''} · previous period (automatic)`],
+            ['Mandatory', 'All critical-compliance and evidence-backed questions'],
+            ['Questionnaire', <Link key="q" to="/questionnaires/bank">View in Question Bank</Link>],
+            ['Benchmark', `${a.type}${a.tier ? ` · Tier ${a.tier}` : ''} · previous period (automatic)`],
           ]}
         />
       </Card>
-      <Card title="Reminders and message" question="Applies to every supplier in this assessment">
+      <Card title="Reminders & Supplier Communication" question="Applies to all participants in this assessment">
         <KeyValue
           items={[
             ['Reminders', `${data.settings.reminderDays.join(', ')} days before the due date`],
-            ['Escalation', `${data.settings.escalateAfterDays} days overdue → client admins`],
-            ['Message', <span key="m" style={{ fontWeight: 400 }}>Please complete this assessment by the due date. Use the question icon on any answer if something is unclear.</span>],
+            ['Escalation', `${data.settings.escalateAfterDays} days overdue → programme administrators`],
+            ['Message', <span key="m" style={{ fontWeight: 400 }}>Please complete this assessment by the due date. Raise a clarification request against any question that requires further guidance.</span>],
           ]}
         />
         <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
           <Button size="sm" onClick={() => toast.notYet('Exporting responses')}>
-            Export responses
+            Export Submissions
           </Button>
           {a.status === 'Active' && (
             <Button size="sm" variant="danger" onClick={close}>
