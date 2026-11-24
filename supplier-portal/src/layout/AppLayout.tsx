@@ -48,7 +48,7 @@ export function AppLayout() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <Sidebar active={section === 'response' ? 'reviews' : section} org={data.org} inboxCount={reviewInboxCount(data)} />
+      <Sidebar active={section === 'response' ? 'reviews' : section} inboxCount={reviewInboxCount(data)} />
       <Drawer
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
@@ -60,7 +60,6 @@ export function AppLayout() {
       >
         <Sidebar
           active={section === 'response' ? 'reviews' : section}
-          org={data.org}
           inboxCount={reviewInboxCount(data)}
           onNavigate={() => setMenuOpen(false)}
         />

@@ -45,43 +45,6 @@ $rail-w: 64px;
     }
   }
 
-  /* Client the portal belongs to, shown as a quiet card under the logo */
-  &__org {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin: 0 2px 4px;
-    padding: 8px;
-    border-radius: var(--radius-md);
-    background: var(--bg-subtle);
-    border: 1px solid var(--border-subtle);
-  }
-
-  &__org-av {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    flex: none;
-    display: grid;
-    place-items: center;
-    background: var(--action-primary);
-    color: var(--text-on-brand);
-    font-size: var(--fs-md);
-    font-weight: var(--fw-bold);
-  }
-
-  &__org-text {
-    min-width: 0;
-    b {
-      display: block;
-      font-size: var(--fs-base);
-      color: var(--text-heading);
-    }
-    small {
-      color: var(--text-secondary);
-      font-size: var(--fs-sm);
-    }
-  }
 
   &__grp {
     padding: 14px 10px 6px;
@@ -297,14 +260,6 @@ $rail-w: 64px;
         max-width: none;
       }
     }
-    .sidebar__org {
-      justify-content: center;
-      margin: 0;
-      padding: 6px 0;
-      border: 0;
-      background: none;
-    }
-    .sidebar__org-text,
     .sidebar__label,
     .sidebar__new,
     .sidebar__powered {

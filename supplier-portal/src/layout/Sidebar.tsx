@@ -1,17 +1,14 @@
 import { Link } from 'react-router-dom';
 import { NAV } from '../app/nav';
 import { NavIcon } from '../components/icons/NavIcon';
-import type { PortalData } from '../domain/types';
 import logo from '../assets/bharat-carbon-logo.jpg';
 
 export function Sidebar({
   active,
-  org,
   inboxCount,
   onNavigate,
 }: {
   active: string;
-  org: PortalData['org'];
   inboxCount: number;
   /** Called when a link is followed (closes the phone menu) */
   onNavigate?: () => void;
@@ -21,15 +18,6 @@ export function Sidebar({
       <Link to="/dashboard" className="sidebar__brand" aria-label="Bharat Carbon · go to dashboard">
         <img src={logo} alt="Bharat Carbon" />
       </Link>
-      <div className="sidebar__org" title={`${org.name} · ${org.programme}`}>
-        <span className="sidebar__org-av" aria-hidden="true">
-          {org.initials}
-        </span>
-        <span className="sidebar__org-text">
-          <b>{org.name}</b>
-          <small>{org.programme}</small>
-        </span>
-      </div>
 
       {NAV.map((g) => (
         <div key={g.title}>
